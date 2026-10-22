@@ -1,0 +1,184 @@
+package com.spectra.entity;
+
+import java.time.Instant;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "alert_events")
+public class AlertEvent {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rule_id", nullable = false)
+    private AlertRule rule;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id", nullable = false)
+    private MonitoredService service;
+
+    @Column(nullable = false, length = 100)
+    private String metricName;
+
+    @Column(nullable = false, length = 20)
+    private String unit;
+
+    @Column(nullable = false)
+    private Double triggerValue;
+
+    @Column(nullable = false)
+    private Double thresholdValue;
+
+    @Column(nullable = false, length = 20)
+    private String severity;
+
+    @Column(nullable = false, length = 20)
+    private String status;
+
+    @Column(nullable = false, length = 255)
+    private String message;
+
+    @Column(nullable = false)
+    private Instant triggeredAt;
+
+    @Column
+    private Instant resolvedAt;
+
+    @Column
+    private Double resolvedValue;
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    public AlertEvent() {
+    }
+
+    @PrePersist
+    public void onPrePersist() {
+        this.createdAt = Instant.now();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public AlertRule getRule() {
+        return rule;
+    }
+
+    public void setRule(AlertRule rule) {
+        this.rule = rule;
+    }
+
+    public MonitoredService getService() {
+        return service;
+    }
+
+    public void setService(MonitoredService service) {
+        this.service = service;
+    }
+
+    public String getMetricName() {
+        return metricName;
+    }
+
+    public void setMetricName(String metricName) {
+        this.metricName = metricName;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public Double getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(Double triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public Double getThresholdValue() {
+        return thresholdValue;
+    }
+
+    public void setThresholdValue(Double thresholdValue) {
+        this.thresholdValue = thresholdValue;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Instant getTriggeredAt() {
+        return triggeredAt;
+    }
+
+    public void setTriggeredAt(Instant triggeredAt) {
+        this.triggeredAt = triggeredAt;
+    }
+
+    public Instant getResolvedAt() {
+        return resolvedAt;
+    }
+
+    public void setResolvedAt(Instant resolvedAt) {
+        this.resolvedAt = resolvedAt;
+    }
+
+    public Double getResolvedValue() {
+        return resolvedValue;
+    }
+
+    public void setResolvedValue(Double resolvedValue) {
+        this.resolvedValue = resolvedValue;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+}
