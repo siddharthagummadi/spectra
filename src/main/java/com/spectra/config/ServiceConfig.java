@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,7 +28,7 @@ public class ServiceConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/health", "/api/users/register").permitAll()
+                    .requestMatchers("/api/health", "/api/users/register", "/actuator/**").permitAll()
 
                     .requestMatchers(HttpMethod.GET, "/api/services", "/api/services/**").hasAnyRole("ADMIN", "USER")
                     .requestMatchers(HttpMethod.POST, "/api/services", "/api/services/**").hasAnyRole("ADMIN", "USER")
@@ -45,6 +46,10 @@ public class ServiceConfig {
                     .requestMatchers(HttpMethod.POST, "/api/metrics", "/api/metrics/**").hasAnyRole("ADMIN", "USER")
 
                     .requestMatchers("/api/alerts", "/api/alerts/**").hasAnyRole("ADMIN", "USER")
+
+                    .requestMatchers("/api/anomalies", "/api/anomalies/**").hasAnyRole("ADMIN", "USER")
+
+                    .requestMatchers("/api/ai", "/api/ai/**").hasAnyRole("ADMIN", "USER")
 
                     .requestMatchers("/api/incidents", "/api/incidents/**").hasAnyRole("ADMIN", "USER")
 
@@ -89,6 +94,7 @@ public class ServiceConfig {
     }
 
     @Bean
+    @Profile("!test")
     public org.springframework.boot.ApplicationRunner databaseMigrationInitializer(org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         return args -> {
             jdbcTemplate.execute("ALTER TABLE monitored_services ADD COLUMN IF NOT EXISTS user_id BIGINT");

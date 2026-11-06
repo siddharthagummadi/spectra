@@ -39,8 +39,10 @@ import com.spectra.repository.IncidentRepository;
 import com.spectra.repository.MonitoredServiceRepository;
 import com.spectra.repository.ServiceMetricRepository;
 import com.spectra.repository.UserRepository;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class WorkspaceDataIsolationIntegrationTest {
 
     private static final String USER_ADMIN_EMAIL = "iso_admin_a@spectra.local";

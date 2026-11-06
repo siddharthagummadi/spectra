@@ -1,0 +1,93 @@
+[
+  {
+    "id": "RB-001",
+    "title": "High CPU Saturation & Process Starvation",
+    "service_type": "Compute / Application Server",
+    "metric_trigger": "CPU_USAGE",
+    "symptoms": ["CPU usage sustained above 85%", "Thread starvation", "Elevated request queue latency"],
+    "root_causes": [
+      "Unbounded thread execution or runaway infinite loop in business logic",
+      "JVM GC pause overhead due to undersized heap or frequent full GC",
+      "Cryptographic handshake bottlenecks under sudden spike traffic"
+    ],
+    "immediate_actions": [
+      "Capture thread dump using jstack: jstack <pid> > thread_dump.txt",
+      "Identify threads consuming CPU using top -H -p <pid>",
+      "Scale application instances horizontally to distribute compute load",
+      "Enable rate limiting at ingress gateway to throttle abusive callers"
+    ],
+    "long_term_fix": "Profile hot paths using Async-Profiler; optimize algorithms and adjust GC configuration to G1GC/ZGC with explicit pause targets."
+  },
+  {
+    "id": "RB-002",
+    "title": "Memory Leak & Heap Exhaustion Mitigation",
+    "service_type": "JVM / In-Memory Cache",
+    "metric_trigger": "MEMORY_USAGE",
+    "symptoms": ["Memory usage climbing linearly without post-GC recovery", "OutOfMemoryError: Java heap space", "Frequent Stop-The-World pauses"],
+    "root_causes": [
+      "Static collections holding unevicted cache references or session state",
+      "ThreadLocal storage not cleaned up in thread pool workers",
+      "Undersized maximum heap allocation (-Xmx) for growing workload"
+    ],
+    "immediate_actions": [
+      "Trigger JVM heap dump using jcmd <pid> GC.heap_dump /tmp/heap.hprof",
+      "Perform rolling restart of unhealthy instances to restore headroom",
+      "Temporarily divert 50% traffic to standby replica nodes"
+    ],
+    "long_term_fix": "Analyze heap dump with Eclipse Memory Analyzer (MAT); eliminate memory retention in static maps and configure bounded caches with TTL."
+  },
+  {
+    "id": "RB-003",
+    "title": "Database Connection Pool Exhaustion & Query Latency",
+    "service_type": "Database / Persistence Layer",
+    "metric_trigger": "RESPONSE_TIME",
+    "symptoms": ["Connection acquisition timeout from HikariCP pool", "Response times exceeding 5000ms", "Cascading 500 errors in downstream consumers"],
+    "root_causes": [
+      "Long-running unindexed queries holding database connections open",
+      "Transaction boundary wrapping slow remote REST/RPC calls",
+      "Database locks or deadlocks waiting on uncommitted transactions"
+    ],
+    "immediate_actions": [
+      "Check active PostgreSQL queries: SELECT pid, now() - query_start AS duration, query FROM pg_stat_activity WHERE state != 'idle' ORDER BY duration DESC;",
+      "Terminate blocking queries using SELECT pg_terminate_backend(<pid>);",
+      "Increase HikariCP maximumPoolSize if PostgreSQL max_connections permits"
+    ],
+    "long_term_fix": "Add appropriate B-tree or partial indexes; refactor service methods to exclude external network calls from @Transactional boundaries."
+  },
+  {
+    "id": "RB-004",
+    "title": "Elevated Error Rate & Downstream Service Failure",
+    "service_type": "Microservice / API Gateway",
+    "metric_trigger": "ERROR_RATE",
+    "symptoms": ["HTTP 5xx response rate exceeding 5%", "Circuit breaker state transitions to OPEN", "Elevated retry storms"],
+    "root_causes": [
+      "Dependent third-party payment or authentication API unreachable",
+      "Schema mismatch or serialization error following a canary deployment",
+      "Network partition or DNS resolution failures across availability zones"
+    ],
+    "immediate_actions": [
+      "Inspect application error logs for root exception class and stack trace",
+      "Engage circuit breaker fallback mechanisms to gracefully degrade non-critical features",
+      "If issue followed a recent release, initiate immediate rollback to last known good build"
+    ],
+    "long_term_fix": "Implement resilient exponential backoff with jitter on HTTP clients; configure distributed caching for degraded read operations."
+  },
+  {
+    "id": "RB-005",
+    "title": "Cascading Service Failure & Dependency Throttling",
+    "service_type": "Distributed Mesh / Message Broker",
+    "metric_trigger": "RESPONSE_TIME",
+    "symptoms": ["Multiple interdependent services alerting simultaneously", "Queue depth climbing exponentially", "Upstream timeouts cascading to edge routers"],
+    "root_causes": [
+      "Single-point-of-failure database or cache node degradation causing upstream backlog",
+      "Lack of bulkheading between critical operational and background batch tasks",
+      "Unbounded message queue retry queue clogging consumer workers"
+    ],
+    "immediate_actions": [
+      "Pause background batch processing and non-critical scheduled tasks",
+      "Enable upstream shed-load policies (HTTP 429) on non-priority traffic",
+      "Isolate failing dependency and activate local cached stubs"
+    ],
+    "long_term_fix": "Architect strict service bulkheads, enforce deadline propagation (gRPC/HTTP headers), and configure dead-letter queues."
+  }
+]

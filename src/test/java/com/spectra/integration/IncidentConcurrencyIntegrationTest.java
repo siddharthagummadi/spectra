@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +26,7 @@ import com.spectra.dto.UpdateIncidentStatusRequest;
 import com.spectra.entity.AlertEvent;
 import com.spectra.entity.AlertRule;
 import com.spectra.entity.Incident;
+import com.spectra.entity.IncidentNote;
 import com.spectra.entity.MonitoredService;
 import com.spectra.exception.GlobalExceptionHandler;
 import com.spectra.repository.AlertEventRepository;
@@ -32,8 +35,10 @@ import com.spectra.repository.IncidentNoteRepository;
 import com.spectra.repository.IncidentRepository;
 import com.spectra.repository.MonitoredServiceRepository;
 import com.spectra.service.IncidentService;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class IncidentConcurrencyIntegrationTest {
 
     private MockMvc mockMvc;
@@ -62,6 +67,7 @@ class IncidentConcurrencyIntegrationTest {
     private MonitoredService testService;
     private AlertRule testRule;
     private AlertEvent testAlert;
+    private final List<Long> testCreatedIncidentIds = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -103,12 +109,28 @@ class IncidentConcurrencyIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        incidentNoteRepository.deleteAll();
-        incidentRepository.deleteAll();
-        alertEventRepository.deleteAll();
-        alertRuleRepository.deleteAll();
+        for (Long incidentId : testCreatedIncidentIds) {
+            List<IncidentNote> notes = incidentNoteRepository.findByIncidentIdOrderByCreatedAtAsc(incidentId);
+            if (!notes.isEmpty()) {
+                incidentNoteRepository.deleteAll(notes);
+            }
+            if (incidentRepository.existsById(incidentId)) {
+                incidentRepository.deleteById(incidentId);
+            }
+        }
+        testCreatedIncidentIds.clear();
+
+        if (testAlert != null && testAlert.getId() != null) {
+            alertEventRepository.deleteById(testAlert.getId());
+            testAlert = null;
+        }
+        if (testRule != null && testRule.getId() != null) {
+            alertRuleRepository.deleteById(testRule.getId());
+            testRule = null;
+        }
         if (testService != null && testService.getId() != null) {
             serviceRepository.deleteById(testService.getId());
+            testService = null;
         }
     }
 
@@ -121,6 +143,7 @@ class IncidentConcurrencyIntegrationTest {
 
         Incident firstIncident = incidentService.createIncident(firstRequest);
         assertNotNull(firstIncident);
+        testCreatedIncidentIds.add(firstIncident.getId());
         assertEquals("OPEN", firstIncident.getStatus());
 
         CreateIncidentRequest duplicateRequest = new CreateIncidentRequest();
@@ -145,6 +168,7 @@ class IncidentConcurrencyIntegrationTest {
 
         Incident subsequentIncident = incidentService.createIncident(subsequentRequest);
         assertNotNull(subsequentIncident);
+        testCreatedIncidentIds.add(subsequentIncident.getId());
         assertEquals("OPEN", subsequentIncident.getStatus());
     }
 
@@ -157,6 +181,7 @@ class IncidentConcurrencyIntegrationTest {
 
         Incident firstIncident = incidentService.createIncident(firstRequest);
         Long firstId = firstIncident.getId();
+        testCreatedIncidentIds.add(firstId);
 
         UpdateIncidentStatusRequest resolveRequest = new UpdateIncidentStatusRequest();
         resolveRequest.setStatus("RESOLVED");
@@ -176,6 +201,7 @@ class IncidentConcurrencyIntegrationTest {
 
         Incident secondIncident = incidentService.createIncident(secondRequest);
         Long secondId = secondIncident.getId();
+        testCreatedIncidentIds.add(secondId);
         assertEquals("OPEN", secondIncident.getStatus());
 
         String reopenJson = """

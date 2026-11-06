@@ -3,12 +3,16 @@ package com.spectra.service;
 import java.time.Instant;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.spectra.dto.CreateMetricRequest;
 import com.spectra.entity.MonitoredService;
@@ -24,9 +28,12 @@ import com.spectra.repository.UserRepository;
 @Service
 public class ServiceMetricService {
 
+    private static final Logger log = LoggerFactory.getLogger(ServiceMetricService.class);
+
     private final ServiceMetricRepository metricRepository;
     private final MonitoredServiceRepository serviceRepository;
     private final AlertService alertService;
+    private final AnomalyDetectionService anomalyDetectionService;
     private final UserRepository userRepository;
 
     @Autowired
@@ -34,10 +41,12 @@ public class ServiceMetricService {
             ServiceMetricRepository metricRepository,
             MonitoredServiceRepository serviceRepository,
             AlertService alertService,
+            AnomalyDetectionService anomalyDetectionService,
             UserRepository userRepository) {
         this.metricRepository = metricRepository;
         this.serviceRepository = serviceRepository;
         this.alertService = alertService;
+        this.anomalyDetectionService = anomalyDetectionService;
         this.userRepository = userRepository;
     }
 
@@ -45,7 +54,7 @@ public class ServiceMetricService {
             ServiceMetricRepository metricRepository,
             MonitoredServiceRepository serviceRepository,
             AlertService alertService) {
-        this(metricRepository, serviceRepository, alertService, null);
+        this(metricRepository, serviceRepository, alertService, null, null);
     }
 
     private User getCurrentUser() {
@@ -91,6 +100,29 @@ public class ServiceMetricService {
 
         ServiceMetric savedMetric = metricRepository.save(metric);
         alertService.evaluateMetric(savedMetric);
+
+        if (anomalyDetectionService != null) {
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            anomalyDetectionService.detectAnomaly(savedMetric);
+                        } catch (Exception ex) {
+                            log.error("Anomaly detection evaluation failed after commit for metric id {}: {}",
+                                    savedMetric.getId(), ex.getMessage(), ex);
+                        }
+                    }
+                });
+            } else {
+                try {
+                    anomalyDetectionService.detectAnomaly(savedMetric);
+                } catch (Exception ex) {
+                    log.error("Anomaly detection evaluation failed for metric id {}: {}",
+                            savedMetric.getId(), ex.getMessage());
+                }
+            }
+        }
         return savedMetric;
     }
 

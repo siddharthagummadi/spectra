@@ -40,6 +40,9 @@ class ServiceMetricServiceTest {
     @Mock
     private AlertService alertService;
 
+    @Mock
+    private AnomalyDetectionService anomalyDetectionService;
+
     @InjectMocks
     private ServiceMetricService service;
 
@@ -124,6 +127,30 @@ class ServiceMetricServiceTest {
 
         assertEquals("MEGABYTES", result.getUnit());
         assertEquals(512.0, result.getMetricValue());
+    }
+
+    @Test
+    void submitMetric_AnomalyDetectionThrowsException_MetricSubmissionStillSucceeds() {
+        MonitoredService monitoredService = new MonitoredService();
+        monitoredService.setId(1L);
+
+        CreateMetricRequest request = new CreateMetricRequest();
+        request.setServiceId(1L);
+        request.setMetricName("CPU_USAGE");
+        request.setMetricValue(75.0);
+
+        when(serviceRepository.findById(1L)).thenReturn(Optional.of(monitoredService));
+        when(metricRepository.save(any(ServiceMetric.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(anomalyDetectionService.detectAnomaly(any(ServiceMetric.class)))
+                .thenThrow(new RuntimeException("Simulated anomaly detection service failure"));
+
+        ServiceMetric result = service.submitMetric(request);
+
+        assertNotNull(result);
+        assertEquals("CPU_USAGE", result.getMetricName());
+        assertEquals(75.0, result.getMetricValue());
+        verify(metricRepository).save(any(ServiceMetric.class));
+        verify(alertService).evaluateMetric(any(ServiceMetric.class));
     }
 
     @Test

@@ -1,0 +1,23 @@
+# Prometheus Configuration for Spectra Operations Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'spectra-backend'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['backend:8080']
+        labels:
+          application: 'spectra-core-platform'
+          environment: 'production'
+
+  - job_name: 'spectra-ai-service'
+    metrics_path: '/health'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['ai-service:8081']
+        labels:
+          application: 'spectra-ai-service'
+          environment: 'production'

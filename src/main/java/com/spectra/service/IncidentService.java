@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -83,6 +84,7 @@ public class IncidentService {
     }
 
     @Bean
+    @Profile("!test")
     public ApplicationRunner incidentIndexInitializer(JdbcTemplate jdbcTemplate) {
         return args -> {
             jdbcTemplate.execute(
@@ -206,6 +208,19 @@ public class IncidentService {
                 incident.setStatus("INVESTIGATING");
                 createAuditNote(incident, author, "Status changed from OPEN to INVESTIGATING");
             } else if (currentStatus.equals("RESOLVED")) {
+                if (incident.getAlert() != null) {
+                    Long alertId = incident.getAlert().getId();
+                    if (currentUser != null && !isAdmin(currentUser)) {
+                        alertEventRepository.findByIdAndServiceUserIdForUpdate(alertId, currentUser.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Alert not found with id: " + alertId));
+                    } else {
+                        alertEventRepository.findByIdForUpdate(alertId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Alert not found with id: " + alertId));
+                    }
+                    if (incidentRepository.existsByAlertIdAndStatusIn(alertId, List.of("OPEN", "INVESTIGATING"))) {
+                        throw new IllegalArgumentException("Cannot reopen incident: an active incident already exists for alert ID " + alertId);
+                    }
+                }
                 incident.setStatus("INVESTIGATING");
                 incident.setResolvedAt(null);
                 createAuditNote(incident, author, "Incident reopened into INVESTIGATING. Previous resolution cleared.");
