@@ -67,7 +67,6 @@ spectra/
 ├── Dockerfile.ai           # Dockerfile for FastAPI AI microservice
 ├── docker-compose.yml      # Orchestration for full stack + Prometheus
 ├── start-spectra.bat       # 1-Click Windows launcher script
-└── start-spectra.ps1       # 1-Click PowerShell launcher script
 ```
 
 ---
@@ -75,10 +74,7 @@ spectra/
 ## 🚀 Quick Start Guide
 
 ### Option 1: One-Click Local Launcher (Windows)
-Double-click `start-spectra.bat` or run in PowerShell:
-```powershell
-.\start-spectra.ps1
-```
+Double-click `start-spectra.bat` in File Explorer.
 This automatically launches the AI service, Spring Boot backend, and React frontend in separate windows.
 
 ---
