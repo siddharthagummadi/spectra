@@ -1,0 +1,174 @@
+{
+  "evaluation_timestamp": "2026-11-06 22:19:41",
+  "total_cases": 100,
+  "top1_accuracy": 100.0,
+  "top3_accuracy": 100.0,
+  "macro_f1": 100.0,
+  "mean_latency_ms": 246.14,
+  "category_metrics": {
+    "MEMORY_LEAK": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    },
+    "DATABASE_CONTENTION": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    },
+    "CPU_STARVATION": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    },
+    "NETWORK_DEPENDENCY": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    },
+    "TRAFFIC_SPIKE": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0
+    }
+  },
+  "paper_comparison": {
+    "rule_based_baseline": "23.75%",
+    "early_stage_multiagent": "28.50%",
+    "intermediate_llm": "41.75%",
+    "rc_llm_state_of_art": "48.25%",
+    "spectra_proposed": "100.00%"
+  },
+  "sample_evaluations": [
+    {
+      "case_id": 1,
+      "service": "Payment-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 311.84,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 2,
+      "service": "Order-Processing-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 260.28,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 3,
+      "service": "Payment-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 243.11,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 4,
+      "service": "Order-Processing-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 262.71,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 5,
+      "service": "Database-Gateway",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 236.28,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 6,
+      "service": "Auth-Identity-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 239.31,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 7,
+      "service": "Payment-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 243.23,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 8,
+      "service": "Database-Gateway",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 246.95,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 9,
+      "service": "Payment-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 247.23,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    },
+    {
+      "case_id": 10,
+      "service": "Payment-Service",
+      "ground_truth": "MEMORY_LEAK",
+      "predicted_root_cause": "JVM Heap Exhaustion / Memory Leak",
+      "predicted_category": "MEMORY_LEAK",
+      "confidence_score": 92.0,
+      "top1_match": true,
+      "top3_match": true,
+      "latency_ms": 246.18,
+      "matched_runbook": "RB-002",
+      "recommended_action": "N/A"
+    }
+  ]
+}
