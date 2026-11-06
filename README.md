@@ -65,21 +65,14 @@ spectra/
 ├── Dockerfile.backend      # Multi-stage Dockerfile for Spring Boot
 ├── Dockerfile.frontend     # Multi-stage Dockerfile for React + Nginx
 ├── Dockerfile.ai           # Dockerfile for FastAPI AI microservice
-├── docker-compose.yml      # Orchestration for full stack + Prometheus
-├── start-spectra.bat       # 1-Click Windows launcher script
+└── docker-compose.yml      # Orchestration for full stack + Prometheus
 ```
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### Option 1: One-Click Local Launcher (Windows)
-Double-click `start-spectra.bat` in File Explorer.
-This automatically launches the AI service, Spring Boot backend, and React frontend in separate windows.
-
----
-
-### Option 2: Running Services Manually
+### Option 1: Running Services Locally
 
 #### 1. AI Intelligence Microservice
 ```bash
@@ -107,7 +100,7 @@ npm run dev
 
 ---
 
-### Option 3: Full Stack Containerized (Docker Compose)
+### Option 2: Full Stack Containerized (Docker Compose)
 To run the entire platform with PostgreSQL and Prometheus using Docker:
 ```bash
 docker compose up --build
