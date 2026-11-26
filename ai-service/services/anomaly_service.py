@@ -5,7 +5,7 @@ from sklearn.ensemble import IsolationForest
 
 
 class AnomalyService:
-    def __init__(self, contamination: float = 0.05):
+    def __init__(self, contamination: float = 0.03):
         self.contamination = contamination
 
     def detect(
@@ -55,7 +55,7 @@ class AnomalyService:
         iso_score = float(iso_forest.decision_function([[current_value]])[0])
         iso_prediction = int(iso_forest.predict([[current_value]])[0]) # -1 for anomaly, 1 for normal
 
-        is_anomaly = (abs_z >= 3.0) or (iso_prediction == -1 and abs_z >= 2.0)
+        is_anomaly = (abs_z >= 4.0) or (iso_prediction == -1 and abs_z >= 3.5)
 
         if not is_anomaly:
             return {

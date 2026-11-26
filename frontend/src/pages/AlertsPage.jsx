@@ -9,6 +9,7 @@ import {
   getAllAlerts,
   acknowledgeAlert
 } from "../api/alertsApi";
+import { getRecentAnomalies } from "../api/anomaliesApi";
 import { getAllServices } from "../api/servicesApi";
 import { Card } from "../components/common/Card";
 import { Badge } from "../components/common/Badge";
@@ -23,6 +24,7 @@ export function AlertsPage() {
   const [activeTab, setActiveTab] = useState("events");
   const [rules, setRules] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
   const [services, setServices] = useState([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,21 @@ export function AlertsPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Load statistical anomalies independently
+  useEffect(() => {
+    let active = true;
+    getRecentAnomalies(50)
+      .then((data) => {
+        if (active) setAnomalies(data || []);
+      })
+      .catch(() => {
+        if (active) setAnomalies([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleGlobalRefresh = () => {
@@ -173,9 +190,11 @@ export function AlertsPage() {
           <Button variant="secondary" onClick={loadData} loading={loading} disabled={loading}>
             Refresh
           </Button>
-          <Button variant="primary" onClick={handleOpenCreateRule} disabled={ownedServices.length === 0}>
-            + Create Alert Rule
-          </Button>
+          {!isAdmin && (
+            <Button variant="primary" onClick={handleOpenCreateRule} disabled={ownedServices.length === 0}>
+              + Create Alert Rule
+            </Button>
+          )}
         </div>
       </div>
 
@@ -232,9 +251,24 @@ export function AlertsPage() {
         >
           Threshold Rules ({rules.length})
         </button>
+        <button
+          onClick={() => setActiveTab("anomalies")}
+          style={{
+            padding: "8px 16px",
+            background: "none",
+            border: "none",
+            borderBottom: activeTab === "anomalies" ? "2px solid var(--accent-primary)" : "2px solid transparent",
+            fontWeight: 600,
+            fontSize: 13,
+            color: activeTab === "anomalies" ? "var(--accent-primary)" : "var(--text-secondary)",
+            cursor: "pointer"
+          }}
+        >
+          ⚡ Statistical Anomalies (|Z| ≥ 3.0) ({anomalies.length})
+        </button>
       </div>
 
-      {activeTab === "events" ? (
+      {activeTab === "events" && (
         <Card>
           <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
@@ -261,95 +295,99 @@ export function AlertsPage() {
               description="Alert events trigger automatically when incoming telemetry breaches an active rule."
             />
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Severity</th>
-                  <th>Status</th>
-                  <th>Service / Rule</th>
-                  {isAdmin && <th>Owner</th>}
-                  <th>Breach Condition</th>
-                  <th>Triggered At</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {alerts.map((a) => {
-                  const isOwner = !isAdmin || !a.ownerEmail || a.ownerEmail === user?.email;
-                  return (
-                    <tr key={a.id}>
-                      <td><Badge>{a.severity}</Badge></td>
-                      <td><Badge>{a.status}</Badge></td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{a.ruleName}</div>
-                        <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{a.serviceName}</div>
-                      </td>
-                      {isAdmin && (
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Service / Rule</th>
+                    {isAdmin && <th>Owner</th>}
+                    <th>Breach Condition</th>
+                    <th>Triggered At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alerts.map((a) => {
+                    const isOwner = !isAdmin || !a.ownerEmail || a.ownerEmail === user?.email;
+                    return (
+                      <tr key={a.id}>
+                        <td><Badge>{a.severity}</Badge></td>
+                        <td><Badge>{a.status}</Badge></td>
                         <td>
-                          <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
-                            {a.ownerEmail || "System"}
-                          </code>
+                          <div style={{ fontWeight: 600 }}>{a.ruleName}</div>
+                          <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{a.serviceName}</div>
                         </td>
-                      )}
-                      <td>
-                        <div>
-                          Triggered: <strong>{a.triggerValue}</strong> (Threshold: {a.thresholdValue} {a.unit})
-                        </div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{a.message}</div>
-                      </td>
-                      <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                        {new Date(a.triggeredAt).toLocaleString()}
-                        {a.resolvedAt && (
-                          <div style={{ color: "var(--status-healthy)", fontSize: 11, marginTop: 2 }}>
-                            Resolved: {new Date(a.resolvedAt).toLocaleTimeString()}
-                          </div>
+                        {isAdmin && (
+                          <td>
+                            <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                              {a.ownerEmail || "System"}
+                            </code>
+                          </td>
                         )}
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          {a.status === "TRIGGERED" && (
-                            isOwner ? (
-                              <button
-                                onClick={() => handleAcknowledgeAlert(a.id)}
+                        <td>
+                          <div>
+                            Triggered: <strong>{a.triggerValue}</strong> (Threshold: {a.thresholdValue} {a.unit})
+                          </div>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{a.message}</div>
+                        </td>
+                        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                          {new Date(a.triggeredAt).toLocaleString()}
+                          {a.resolvedAt && (
+                            <div style={{ color: "var(--status-healthy)", fontSize: 11, marginTop: 2 }}>
+                              Resolved: {new Date(a.resolvedAt).toLocaleTimeString()}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            {a.status === "TRIGGERED" && (
+                              isOwner ? (
+                                <button
+                                  onClick={() => handleAcknowledgeAlert(a.id)}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    color: "var(--status-warning)",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    cursor: "pointer"
+                                  }}
+                                >
+                                  Acknowledge
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+                                  Read-only
+                                </span>
+                              )
+                            )}
+                            {a.status !== "RESOLVED" && isOwner && (
+                              <Link
+                                to={`/incidents?createAlertId=${a.id}`}
                                 style={{
-                                  background: "none",
-                                  border: "none",
-                                  color: "var(--status-warning)",
+                                  color: "var(--accent-primary)",
                                   fontSize: 12,
-                                  fontWeight: 600,
-                                  cursor: "pointer"
+                                  fontWeight: 500
                                 }}
                               >
-                                Acknowledge
-                              </button>
-                            ) : (
-                              <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
-                                Read-only
-                              </span>
-                            )
-                          )}
-                          {a.status !== "RESOLVED" && isOwner && (
-                            <Link
-                              to={`/incidents?createAlertId=${a.id}`}
-                              style={{
-                                color: "var(--accent-primary)",
-                                fontSize: 12,
-                                fontWeight: 500
-                              }}
-                            >
-                              Link Incident
-                            </Link>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                                Link Incident
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
-      ) : (
+      )}
+
+      {activeTab === "rules" && (
         <Card>
           {loading ? (
             <LoadingSpinner message="Loading alert rules..." />
@@ -376,82 +414,156 @@ export function AlertsPage() {
               />
             )
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Rule Name</th>
-                  <th>Service</th>
-                  {isAdmin && <th>Owner</th>}
-                  <th>Metric Condition</th>
-                  <th>Severity</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rules.map((r) => {
-                  const isOwner = !isAdmin || !r.ownerEmail || r.ownerEmail === user?.email;
-                  return (
-                    <tr key={r.id}>
-                      <td style={{ fontWeight: 600 }}>{r.ruleName}</td>
-                      <td>{r.serviceName}</td>
-                      {isAdmin && (
-                        <td>
-                          <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
-                            {r.ownerEmail || "System"}
-                          </code>
-                        </td>
-                      )}
-                      <td>
-                        <code>{r.metricName}</code> {r.comparator} <strong>{r.thresholdValue}</strong> {r.unit}
-                      </td>
-                      <td><Badge>{r.severity}</Badge></td>
-                      <td>
-                        <Badge variant={r.active ? "healthy" : "neutral"}>
-                          {r.active ? "ENABLED" : "DISABLED"}
-                        </Badge>
-                      </td>
-                      <td>
-                        {isOwner ? (
-                          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                            <button
-                              onClick={() => handleToggleRuleStatus(r)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: r.active ? "var(--status-warning)" : "var(--status-healthy)",
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: "pointer"
-                              }}
-                            >
-                              {r.active ? "Disable" : "Enable"}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRule(r.id)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "var(--status-critical)",
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: "pointer"
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
-                            Read-only
-                          </span>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rule Name</th>
+                    <th>Service</th>
+                    {isAdmin && <th>Owner</th>}
+                    <th>Metric Condition</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.map((r) => {
+                    const isOwner = !isAdmin || !r.ownerEmail || r.ownerEmail === user?.email;
+                    return (
+                      <tr key={r.id}>
+                        <td style={{ fontWeight: 600 }}>{r.ruleName}</td>
+                        <td>{r.serviceName}</td>
+                        {isAdmin && (
+                          <td>
+                            <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                              {r.ownerEmail || "System"}
+                            </code>
+                          </td>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td>
+                          <code>{r.metricName}</code> {r.comparator} <strong>{r.thresholdValue}</strong> {r.unit}
+                        </td>
+                        <td><Badge>{r.severity}</Badge></td>
+                        <td>
+                          <Badge variant={r.active ? "healthy" : "neutral"}>
+                            {r.active ? "ENABLED" : "DISABLED"}
+                          </Badge>
+                        </td>
+                        <td>
+                          {isOwner ? (
+                            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                              <button
+                                onClick={() => handleToggleRuleStatus(r)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: r.active ? "var(--status-warning)" : "var(--status-healthy)",
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: "pointer"
+                                }}
+                              >
+                                {r.active ? "Disable" : "Enable"}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRule(r.id)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: "var(--status-critical)",
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: "pointer"
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+                              Read-only
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {activeTab === "anomalies" && (
+        <Card>
+          <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+            <div>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
+                Raw parametric anomaly observations evaluated by the rolling 30-sample statistical window (|Z| ≥ 3.0 with Bessel's correction).
+              </p>
+            </div>
+            <Badge variant="healthy">{anomalies.length} Detected Anomalies</Badge>
+          </div>
+
+          {loading ? (
+            <LoadingSpinner message="Loading anomaly events..." />
+          ) : anomalies.length === 0 ? (
+            <EmptyState
+              title="No statistical anomalies detected"
+              description="All recent microservice telemetry measurements are operating within baseline Gaussian tolerances (|Z| < 3.0)."
+            />
+          ) : (
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Microservice</th>
+                    <th>Monitored Metric</th>
+                    <th>Observed Value</th>
+                    <th>Baseline Mean (μ)</th>
+                    <th>Std Dev (σ)</th>
+                    <th>Z-Score</th>
+                    <th>Direction</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {anomalies.map((anom) => {
+                    const absZ = Math.abs(anom.zScore || 0);
+                    return (
+                      <tr key={anom.id}>
+                        <td style={{ fontSize: 12, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
+                          {anom.recordedAt ? new Date(anom.recordedAt).toLocaleTimeString() : "Just now"}
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{anom.serviceName}</td>
+                        <td><code>{anom.metricName}</code></td>
+                        <td style={{ fontWeight: 600 }}>{anom.currentValue?.toFixed(2)}</td>
+                        <td style={{ color: "var(--text-muted)" }}>{anom.baselineMean?.toFixed(2)}</td>
+                        <td style={{ color: "var(--text-muted)" }}>{anom.baselineStdDev?.toFixed(2)}</td>
+                        <td>
+                          <Badge variant={absZ >= 4.0 ? "critical" : "warning"}>
+                            {anom.zScore > 0 ? "+" : ""}{anom.zScore?.toFixed(2)}σ
+                          </Badge>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: 12, fontWeight: 500, color: anom.direction === "POSITIVE_SPIKE" ? "var(--status-critical)" : "var(--accent-primary)" }}>
+                            {anom.direction === "POSITIVE_SPIKE" ? "↑ Spike" : "↓ Drop"}
+                          </span>
+                        </td>
+                        <td>
+                          <Badge variant={anom.severity === "CRITICAL" ? "critical" : "warning"}>
+                            {anom.severity || "CRITICAL"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
       )}

@@ -152,9 +152,11 @@ export function ServicesPage() {
               : "Manage registered application services and monitoring endpoints"}
           </p>
         </div>
-        <Button variant="primary" onClick={handleOpenCreate}>
-          + Register Service
-        </Button>
+        {!isAdmin && (
+          <Button variant="primary" onClick={handleOpenCreate}>
+            + Register Service
+          </Button>
+        )}
       </div>
 
       {errorMessage && (
@@ -222,91 +224,93 @@ export function ServicesPage() {
             )}
           />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Service Name</th>
-                {isAdmin && <th>Owner</th>}
-                <th>Environment</th>
-                <th>Endpoint URL</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredServices.map((svc) => {
-                const isOwner = !isAdmin || !svc.ownerEmail || svc.ownerEmail === user?.email;
-                return (
-                  <tr key={svc.id}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{svc.name}</div>
-                      {svc.description && (
-                        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-                          {svc.description}
-                        </div>
-                      )}
-                    </td>
-                    {isAdmin && (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Service Name</th>
+                  {isAdmin && <th>Owner</th>}
+                  <th>Environment</th>
+                  <th>Endpoint URL</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredServices.map((svc) => {
+                  const isOwner = !isAdmin;
+                  return (
+                    <tr key={svc.id}>
                       <td>
-                        <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
-                          {svc.ownerEmail || "System"}
-                        </code>
+                        <div style={{ fontWeight: 600 }}>{svc.name}</div>
+                        {svc.description && (
+                          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
+                            {svc.description}
+                          </div>
+                        )}
                       </td>
-                    )}
-                    <td>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
-                        {svc.environment}
-                      </span>
-                    </td>
-                    <td>
-                      <code style={{ fontSize: 12, color: "var(--text-muted)" }}>{svc.endpointUrl}</code>
-                    </td>
-                    <td>
-                      <Badge variant={svc.active ? "healthy" : "neutral"}>
-                        {svc.active ? "ACTIVE" : "INACTIVE"}
-                      </Badge>
-                    </td>
-                    <td>
-                      {isOwner ? (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => handleOpenEdit(svc)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "var(--accent-primary)",
-                              fontSize: 12,
-                              fontWeight: 500,
-                              cursor: "pointer"
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleToggleStatus(svc)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: svc.active ? "var(--status-warning)" : "var(--status-healthy)",
-                              fontSize: 12,
-                              fontWeight: 500,
-                              cursor: "pointer"
-                            }}
-                          >
-                            {svc.active ? "Deactivate" : "Activate"}
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
-                          Read-only
-                        </span>
+                      {isAdmin && (
+                        <td>
+                          <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                            {svc.ownerEmail || "System"}
+                          </code>
+                        </td>
                       )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+                          {svc.environment}
+                        </span>
+                      </td>
+                      <td>
+                        <code style={{ fontSize: 12, color: "var(--text-muted)" }}>{svc.endpointUrl}</code>
+                      </td>
+                      <td>
+                        <Badge variant={svc.active ? "healthy" : "neutral"}>
+                          {svc.active ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </td>
+                      <td>
+                        {isOwner ? (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={() => handleOpenEdit(svc)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "var(--accent-primary)",
+                                fontSize: 12,
+                                fontWeight: 500,
+                                cursor: "pointer"
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleToggleStatus(svc)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: svc.active ? "var(--status-warning)" : "var(--status-healthy)",
+                                fontSize: 12,
+                                fontWeight: 500,
+                                cursor: "pointer"
+                              }}
+                            >
+                              {svc.active ? "Deactivate" : "Activate"}
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+                            Read-only
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 

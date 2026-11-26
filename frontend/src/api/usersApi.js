@@ -28,6 +28,10 @@ export async function verifyCredentials(email, password) {
     email: user.email,
     fullName: user.fullName,
     role: user.role,
+    enterpriseId: user.enterpriseId || null,
+    enterpriseName: user.enterpriseName || null,
+    enterpriseOrganizationCode: user.enterpriseOrganizationCode || null,
+    enterpriseStatus: user.enterpriseStatus || null,
     credentials
   };
 }

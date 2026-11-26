@@ -9,12 +9,14 @@ import { Modal } from "../components/common/Modal";
 import { AlertBanner } from "../components/common/AlertBanner";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { EmptyState } from "../components/common/EmptyState";
+import { CapacityForecastCard } from "../components/analytics/CapacityForecastCard";
 
 export function MetricsPage() {
   const { user, isAdmin } = useAuth();
   const [metrics, setMetrics] = useState([]);
   const [services, setServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState("ALL");
+  const [limit, setLimit] = useState(50);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -40,8 +42,8 @@ export function MetricsPage() {
       const [servicesData, metricsData] = await Promise.all([
         getAllServices(),
         selectedServiceId === "ALL"
-          ? getRecentMetrics(50)
-          : getMetricsByServiceId(Number(selectedServiceId), 50)
+          ? getRecentMetrics(limit)
+          : getMetricsByServiceId(Number(selectedServiceId), limit)
       ]);
       setServices(servicesData || []);
       setMetrics(metricsData || []);
@@ -51,7 +53,7 @@ export function MetricsPage() {
       setLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [selectedServiceId]);
+  }, [selectedServiceId, limit]);
 
   useEffect(() => {
     loadData();
@@ -143,9 +145,11 @@ export function MetricsPage() {
           <Button variant="secondary" onClick={loadData} loading={loading} disabled={loading}>
             Refresh
           </Button>
-          <Button variant="primary" onClick={handleOpenIngest} disabled={ownedServices.length === 0}>
-            + Submit Metric
-          </Button>
+          {!isAdmin && (
+            <Button variant="primary" onClick={handleOpenIngest} disabled={ownedServices.length === 0}>
+              + Submit Metric
+            </Button>
+          )}
         </div>
       </div>
 
@@ -196,24 +200,50 @@ export function MetricsPage() {
         </Card>
       </div>
 
+      <div style={{ marginBottom: 20 }}>
+        <CapacityForecastCard services={services} />
+      </div>
+
       <Card>
-        <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
-          <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
-            Filter by Service:
-          </label>
-          <select
-            className="form-select"
-            value={selectedServiceId}
-            onChange={(e) => setSelectedServiceId(e.target.value)}
-            style={{ width: 260 }}
-          >
-            <option value="ALL">All Services (Latest Ingested)</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.environment}){isAdmin && s.ownerEmail ? ` - ${s.ownerEmail}` : ""}
-              </option>
-            ))}
-          </select>
+        <div style={{ display: "flex", gap: 16, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
+              Filter by Service:
+            </label>
+            <select
+              className="form-select"
+              value={selectedServiceId}
+              onChange={(e) => setSelectedServiceId(e.target.value)}
+              style={{ width: 240 }}
+            >
+              <option value="ALL">All Services (Latest Ingested)</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.environment}){isAdmin && s.ownerEmail ? ` - ${s.ownerEmail}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
+              Limit:
+            </label>
+            <select
+              className="form-select"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              style={{ width: 100 }}
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <div style={{ marginLeft: "auto", fontSize: 12, color: "var(--text-secondary)" }}>
+            Showing {metrics.length} telemetry points
+          </div>
         </div>
 
         {loading ? (
@@ -231,33 +261,35 @@ export function MetricsPage() {
             )}
           />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Metric Name</th>
-                <th>Value</th>
-                <th>Recorded At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>{m.serviceName}</div>
-                  </td>
-                  <td><code>{m.metricName}</code></td>
-                  <td>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>{m.metricValue}</span>{" "}
-                    <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{m.unit}</span>
-                  </td>
-                  <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                    {new Date(m.recordedAt).toLocaleString()}
-                  </td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Metric Name</th>
+                  <th>Value</th>
+                  <th>Recorded At</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {metrics.map((m) => (
+                  <tr key={m.id}>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{m.serviceName}</div>
+                    </td>
+                    <td><code>{m.metricName}</code></td>
+                    <td>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{m.metricValue}</span>{" "}
+                      <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{m.unit}</span>
+                    </td>
+                    <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                      {new Date(m.recordedAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 

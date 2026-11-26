@@ -44,7 +44,27 @@ class RagService:
         self.corpus_matrix = self.vectorizer.fit_transform(corpus)
 
     def query_runbooks(self, query: str, top_k: int = 3, metric_filter: Optional[str] = None) -> List[Dict[str, Any]]:
-        if not self.runbooks or self.vectorizer is None or self.corpus_matrix is None:
+        if not self.runbooks:
+            return []
+
+        # If query is empty, return default top runbooks for browsing
+        if not query or not query.strip():
+            results = []
+            for rb in self.runbooks[:top_k]:
+                results.append({
+                    "score": 1.0,
+                    "runbook_id": rb.get("id"),
+                    "title": rb.get("title"),
+                    "metric_trigger": rb.get("metric_trigger"),
+                    "service_type": rb.get("service_type"),
+                    "symptoms": rb.get("symptoms", []),
+                    "root_causes": rb.get("root_causes", []),
+                    "immediate_actions": rb.get("immediate_actions", []),
+                    "long_term_fix": rb.get("long_term_fix", "")
+                })
+            return results
+
+        if self.vectorizer is None or self.corpus_matrix is None:
             return []
 
         query_vec = self.vectorizer.transform([query])
@@ -53,22 +73,23 @@ class RagService:
         results = []
         for idx, score in enumerate(scores):
             rb = self.runbooks[idx]
-            # Optional boost if metric_trigger matches
             adjusted_score = float(score)
             if metric_filter and rb.get("metric_trigger", "").upper() == metric_filter.upper():
                 adjusted_score += 0.25
 
-            results.append({
-                "score": round(adjusted_score, 4),
-                "runbook_id": rb.get("id"),
-                "title": rb.get("title"),
-                "metric_trigger": rb.get("metric_trigger"),
-                "service_type": rb.get("service_type"),
-                "symptoms": rb.get("symptoms", []),
-                "root_causes": rb.get("root_causes", []),
-                "immediate_actions": rb.get("immediate_actions", []),
-                "long_term_fix": rb.get("long_term_fix", "")
-            })
+            # Only include runbooks with genuine semantic/keyword relevance (score > 0.05)
+            if adjusted_score >= 0.05:
+                results.append({
+                    "score": round(adjusted_score, 4),
+                    "runbook_id": rb.get("id"),
+                    "title": rb.get("title"),
+                    "metric_trigger": rb.get("metric_trigger"),
+                    "service_type": rb.get("service_type"),
+                    "symptoms": rb.get("symptoms", []),
+                    "root_causes": rb.get("root_causes", []),
+                    "immediate_actions": rb.get("immediate_actions", []),
+                    "long_term_fix": rb.get("long_term_fix", "")
+                })
 
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:top_k]

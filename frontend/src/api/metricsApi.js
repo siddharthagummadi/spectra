@@ -7,6 +7,13 @@ export async function submitMetric(payload) {
   });
 }
 
+export async function submitMetricsBatch(payloadList) {
+  return request("/api/metrics/batch", {
+    method: "POST",
+    body: JSON.stringify(payloadList)
+  });
+}
+
 export async function getRecentMetrics(limit = 50) {
   return request(`/api/metrics/recent?limit=${limit}`);
 }

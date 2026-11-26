@@ -165,9 +165,11 @@ export function IncidentsPage() {
           <Button variant="secondary" onClick={loadData} loading={loading} disabled={loading}>
             Refresh
           </Button>
-          <Button variant="primary" onClick={handleOpenCreate} disabled={ownedServices.length === 0}>
-            + Create Incident
-          </Button>
+          {!isAdmin && (
+            <Button variant="primary" onClick={handleOpenCreate} disabled={ownedServices.length === 0}>
+              + Create Incident
+            </Button>
+          )}
         </div>
       </div>
 
@@ -211,58 +213,64 @@ export function IncidentsPage() {
             )}
           />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Severity</th>
-                <th>Title / Service</th>
-                {isAdmin && <th>Owner</th>}
-                <th>Status</th>
-                <th>Assigned To</th>
-                <th>Triggered At</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {incidents.map((inc) => (
-                <tr key={inc.id}>
-                  <td style={{ color: "var(--text-muted)", fontSize: 12 }}>#{inc.id}</td>
-                  <td><Badge>{inc.severity}</Badge></td>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>{inc.title}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                      {inc.serviceName} {inc.alertId && `(Alert #${inc.alertId})`}
-                    </div>
-                  </td>
-                  {isAdmin && (
-                    <td>
-                      <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
-                        {inc.ownerEmail || "System"}
-                      </code>
-                    </td>
-                  )}
-                  <td><Badge>{inc.status}</Badge></td>
-                  <td style={{ fontSize: 13 }}>{inc.assignedTo || "Unassigned"}</td>
-                  <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                    {new Date(inc.triggeredAt).toLocaleString()}
-                  </td>
-                  <td>
-                    <Link
-                      to={`/incidents/${inc.id}`}
-                      style={{
-                        color: "var(--accent-primary)",
-                        fontWeight: 600,
-                        fontSize: 12
-                      }}
-                    >
-                      Manage →
-                    </Link>
-                  </td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Severity</th>
+                  <th>Title / Service</th>
+                  {isAdmin && <th>Owner</th>}
+                  <th>Status</th>
+                  <th>Assigned To</th>
+                  <th>Triggered At</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {incidents.map((inc) => (
+                  <tr key={inc.id}>
+                    <td style={{ color: "var(--text-muted)", fontSize: 12 }}>#{inc.id}</td>
+                    <td><Badge>{inc.severity}</Badge></td>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{inc.title}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                        {inc.serviceName} {inc.alertId && `(Alert #${inc.alertId})`}
+                      </div>
+                    </td>
+                    {isAdmin && (
+                      <td>
+                        <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                          {inc.ownerEmail || "System"}
+                        </code>
+                      </td>
+                    )}
+                    <td><Badge>{inc.status}</Badge></td>
+                    <td style={{ fontSize: 13 }}>{inc.assignedTo || "Unassigned"}</td>
+                    <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                      {new Date(inc.triggeredAt).toLocaleString()}
+                    </td>
+                    <td>
+                      <Link
+                        to={`/incidents/${inc.id}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          color: "var(--accent-primary)",
+                          fontWeight: 600,
+                          fontSize: 12,
+                          textDecoration: "none"
+                        }}
+                      >
+                        🔍 Investigate & Diagnose →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 

@@ -3,6 +3,14 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   padding: 16px 20px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .badge {
@@ -148,9 +156,10 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-modal);
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .modal-header {

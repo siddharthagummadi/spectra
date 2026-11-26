@@ -8,7 +8,8 @@ from schemas import (
     PredictionRequest, PredictionResponse,
     RagQueryRequest, RagQueryResponse,
     RecommendationRequest, RecommendationResponse,
-    CopilotChatRequest, CopilotChatResponse
+    CopilotChatRequest, CopilotChatResponse,
+    CopilotConfigRequest, CopilotConfigResponse
 )
 from services.anomaly_service import AnomalyService
 from services.rca_service import RcaService
@@ -153,6 +154,26 @@ def chat_copilot(req: CopilotChatRequest):
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Copilot engine failure: {str(e)}")
+
+
+@app.get("/api/v1/copilot/config", response_model=CopilotConfigResponse)
+def get_copilot_config():
+    try:
+        return copilot_svc.get_config_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get copilot config: {str(e)}")
+
+
+@app.post("/api/v1/copilot/config", response_model=CopilotConfigResponse)
+def configure_copilot(req: CopilotConfigRequest):
+    try:
+        return copilot_svc.configure_keys(
+            provider=req.provider,
+            api_key=req.api_key,
+            model=req.model
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to update copilot config: {str(e)}")
 
 
 if __name__ == "__main__":

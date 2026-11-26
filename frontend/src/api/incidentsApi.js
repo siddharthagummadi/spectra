@@ -40,3 +40,14 @@ export async function addNote(incidentId, payload) {
     body: JSON.stringify(payload)
   });
 }
+
+export async function getIncidentAiDiagnostics(incidentId) {
+  return request(`/api/incidents/${incidentId}/ai-diagnostics`);
+}
+
+export async function triggerIncidentAiDiagnostics(incidentId, forceReanalyze = false) {
+  return request(`/api/incidents/${incidentId}/ai-diagnostics`, {
+    method: "POST",
+    body: JSON.stringify({ forceReanalyze: Boolean(forceReanalyze) })
+  });
+}

@@ -22,9 +22,7 @@ describe("AuthContext", () => {
     sessionStorage.clear();
   });
 
-  it("manages credentials exclusively in React memory without persistent storage", () => {
-    const localSetSpy = vi.spyOn(Storage.prototype, "setItem");
-
+  it("persists credentials and user session to survive browser refreshes (Phase 10)", () => {
     render(
       <AuthProvider>
         <TestConsumer />
@@ -43,12 +41,9 @@ describe("AuthContext", () => {
     expect(screen.getByTestId("user-email").textContent).toBe("dev@example.com");
     expect(screen.getByTestId("credentials").textContent).toBe("bW9jay1jcmVkcw==");
 
-    expect(localStorage.getItem("spectra_auth_credentials")).toBeNull();
-    expect(localStorage.getItem("spectra_auth_user")).toBeNull();
-    expect(sessionStorage.getItem("spectra_auth_credentials")).toBeNull();
-    expect(sessionStorage.getItem("spectra_auth_user")).toBeNull();
-
-    expect(localSetSpy).not.toHaveBeenCalledWith("spectra_auth_credentials", expect.anything());
+    // Verify session persistence in storage
+    expect(localStorage.getItem("spectra_auth_credentials")).toBe("bW9jay1jcmVkcw==");
+    expect(JSON.parse(localStorage.getItem("spectra_auth_user")).email).toBe("dev@example.com");
 
     act(() => {
       screen.getByText("Logout").click();
@@ -56,15 +51,12 @@ describe("AuthContext", () => {
 
     expect(screen.getByTestId("auth-status").textContent).toBe("anonymous");
     expect(screen.getByTestId("user-email").textContent).toBe("none");
-
-    localSetSpy.mockRestore();
+    expect(localStorage.getItem("spectra_auth_credentials")).toBeNull();
   });
 
-  it("clears any legacy credentials from storage on initialization", () => {
-    localStorage.setItem("spectra_auth_credentials", "legacy-creds");
-    localStorage.setItem("spectra_auth_user", JSON.stringify({ email: "legacy@spectra.local" }));
-    sessionStorage.setItem("spectra_auth_credentials", "legacy-session-creds");
-    sessionStorage.setItem("spectra_auth_user", JSON.stringify({ email: "legacy@spectra.local" }));
+  it("synchronously restores authenticated session from storage on page load/refresh", () => {
+    localStorage.setItem("spectra_auth_credentials", "stored-refresh-creds");
+    localStorage.setItem("spectra_auth_user", JSON.stringify({ email: "restored@spectra.local", role: "ADMIN" }));
 
     render(
       <AuthProvider>
@@ -72,11 +64,8 @@ describe("AuthContext", () => {
       </AuthProvider>
     );
 
-    expect(localStorage.getItem("spectra_auth_credentials")).toBeNull();
-    expect(localStorage.getItem("spectra_auth_user")).toBeNull();
-    expect(sessionStorage.getItem("spectra_auth_credentials")).toBeNull();
-    expect(sessionStorage.getItem("spectra_auth_user")).toBeNull();
-
-    expect(screen.getByTestId("auth-status").textContent).toBe("anonymous");
+    expect(screen.getByTestId("auth-status").textContent).toBe("authenticated");
+    expect(screen.getByTestId("user-email").textContent).toBe("restored@spectra.local");
+    expect(screen.getByTestId("credentials").textContent).toBe("stored-refresh-creds");
   });
 });

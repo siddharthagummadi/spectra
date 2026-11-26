@@ -12,8 +12,9 @@ export function AppLayout() {
     if (path.startsWith("/services")) return "Monitored Services";
     if (path.startsWith("/metrics")) return "Telemetry & Metrics";
     if (path.startsWith("/alerts")) return "Alert Management";
-    if (path.startsWith("/incidents/")) return "Incident Details";
+    if (path.startsWith("/incidents/")) return "Incident Diagnostics & Runbook";
     if (path.startsWith("/incidents")) return "Incident Management";
+    if (path.startsWith("/benchmark")) return "Research Benchmark Evaluation";
     return "Spectra Operations Platform";
   };
 

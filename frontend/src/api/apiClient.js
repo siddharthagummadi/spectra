@@ -17,10 +17,14 @@ export function setUnauthorizedHandler(handler) {
 
 export async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
-  const headers = {
-    "Content-Type": "application/json",
-    ...options.headers
-  };
+  const headers = { ...options.headers };
+
+  // If sending FormData, remove Content-Type so browser sets boundary automatically
+  if (options.body instanceof FormData) {
+    delete headers["Content-Type"];
+  } else if (!headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const creds = activeCredentials;
   if (creds && !headers["Authorization"]) {
@@ -49,7 +53,7 @@ export async function request(endpoint, options = {}) {
       errorData = null;
     }
 
-    if (response.status === 401 && unauthorizedHandler) {
+    if (response.status === 401 && unauthorizedHandler && !options.skipUnauthorizedHandler) {
       unauthorizedHandler();
     }
 
@@ -69,10 +73,56 @@ export async function request(endpoint, options = {}) {
     return null;
   }
 
+  if (options.responseType === "text") {
+    return await response.text();
+  }
+
   const contentType = response.headers.get("content-type");
+  if (contentType && (contentType.includes("text/csv") || contentType.includes("text/plain"))) {
+    return await response.text();
+  }
   if (contentType && contentType.includes("application/json")) {
     return await response.json();
   }
 
   return null;
 }
+
+export const apiClient = {
+  async get(endpoint, options = {}) {
+    const data = await request(endpoint, { method: "GET", ...options });
+    return { data };
+  },
+  async post(endpoint, body, options = {}) {
+    const isFormData = body instanceof FormData;
+    const reqBody = isFormData ? body : (typeof body === "object" ? JSON.stringify(body) : body);
+    const data = await request(endpoint, {
+      method: "POST",
+      body: reqBody,
+      ...options
+    });
+    return { data };
+  },
+  async put(endpoint, body, options = {}) {
+    const reqBody = typeof body === "object" ? JSON.stringify(body) : body;
+    const data = await request(endpoint, {
+      method: "PUT",
+      body: reqBody,
+      ...options
+    });
+    return { data };
+  },
+  async delete(endpoint, options = {}) {
+    const data = await request(endpoint, { method: "DELETE", ...options });
+    return { data };
+  },
+  async patch(endpoint, body, options = {}) {
+    const reqBody = typeof body === "object" ? JSON.stringify(body) : body;
+    const data = await request(endpoint, {
+      method: "PATCH",
+      body: reqBody,
+      ...options
+    });
+    return { data };
+  }
+};

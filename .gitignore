@@ -1,8 +1,10 @@
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+**/target/
+backend/.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+dependency-reduced-pom.xml
 
 .metadata/
 
@@ -41,6 +43,7 @@ dist-ssr/
 .env.*
 *.env
 !.env.example
+!ai-service/.env.example
 !frontend/.env.example
 
 *.log

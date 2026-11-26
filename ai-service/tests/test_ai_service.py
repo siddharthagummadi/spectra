@@ -205,6 +205,29 @@ class TestAiService(unittest.TestCase):
         self.assertEqual(res.json()["status"], "SUCCESS")
         self.assertIn("RB-001", res.json()["referenced_runbooks"])
 
+    def test_copilot_config_status(self):
+        res = self.client.get("/api/v1/copilot/config")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("provider", data)
+        self.assertIn("active_model", data)
+        self.assertIn("free_of_cost", data)
+
+    def test_copilot_configure_provider(self):
+        payload = {
+            "provider": "gemini",
+            "api_key": "AIzaSyDummyKeyForTestingOnly12345",
+            "model": "gemini-1.5-flash"
+        }
+        res = self.client.post("/api/v1/copilot/config", json=payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["provider"], "GEMINI")
+        self.assertEqual(data["active_model"], "gemini-1.5-flash")
+        self.assertTrue(data["is_configured"])
+        self.assertTrue(data["free_of_cost"])
+        self.assertIn("AIza...2345", data["masked_key"])
+
 
 if __name__ == "__main__":
     unittest.main()

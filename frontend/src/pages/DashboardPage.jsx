@@ -44,7 +44,7 @@ export function DashboardPage() {
         getAllRules(),
         getAllAlerts(),
         getAllIncidents(),
-        getRecentMetrics(6)
+        getRecentMetrics(8)
       ]);
 
       const nextErrors = {};
@@ -146,38 +146,125 @@ export function DashboardPage() {
     });
   }, [data.services, serviceSearch, ownerFilter, envFilter, statusFilter]);
 
+  const hasAnyData = data.services.length > 0 || data.metrics.length > 0 || data.alerts.length > 0;
+
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+    <div style={{ maxWidth: 1280, margin: "0 auto", padding: "4px 0" }}>
+      {/* Top Header & Role Actions */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 14 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700 }}>Operations Dashboard</h1>
-            {isAdmin && (
-              <Badge variant="neutral">Centralized Admin View</Badge>
-            )}
+            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: "var(--text-primary)" }}>
+              Operations Dashboard
+            </h1>
+            <Badge variant={isAdmin ? "active" : "neutral"}>
+              {isAdmin ? "Centralized Admin View" : "Operator Workspace"}
+            </Badge>
           </div>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4, marginBottom: 0 }}>
             {isAdmin
-              ? "Enterprise-wide real-time monitoring across all user workspaces"
-              : "Real-time telemetry and state aggregated from monitored services"}
+              ? "Centralized enterprise operations, cross-workspace telemetry, and incident governance."
+              : "Real-time telemetry, service health monitoring, and active incident response."}
           </p>
         </div>
-        <Button variant="secondary" onClick={loadDashboard} loading={loading} disabled={loading}>
-          Refresh Data
-        </Button>
+
+        {/* Action Buttons */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <Link
+            to="/ingestion"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "7px 14px",
+              backgroundColor: "var(--accent-primary)",
+              color: "#fff",
+              borderRadius: "var(--radius-sm)",
+              fontSize: 12,
+              fontWeight: 600,
+              textDecoration: "none"
+            }}
+          >
+            <span>📥 Ingest Dataset</span>
+          </Link>
+
+          {isAdmin && (
+            <>
+              <Link
+                to="/datasets"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "6px 12px",
+                  backgroundColor: "var(--bg-surface)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-sm)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  textDecoration: "none"
+                }}
+              >
+                <span>📁 Batches</span>
+              </Link>
+              <Link
+                to="/evaluation"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "6px 12px",
+                  backgroundColor: "var(--bg-surface)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-sm)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  textDecoration: "none"
+                }}
+              >
+                <span>📊 Model Evaluation</span>
+              </Link>
+              <Link
+                to="/integrations"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "6px 12px",
+                  backgroundColor: "var(--bg-surface)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-sm)",
+                  color: "var(--text-primary)",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  textDecoration: "none"
+                }}
+              >
+                <span>🏢 Integrations</span>
+              </Link>
+            </>
+          )}
+
+          <Button variant="secondary" onClick={loadDashboard} loading={loading} disabled={loading}>
+            ↻ Refresh
+          </Button>
+        </div>
       </div>
 
       {globalError && (
         <AlertBanner message={globalError} onClose={() => setGlobalError("")} />
       )}
 
+      {/* Primary KPI Cards */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
         gap: 16,
         marginBottom: 24
       }}>
-        <Card title={isAdmin ? "Enterprise Services" : "Services"}>
+        <Card title={isAdmin ? "Enterprise Services" : "Registered Services"}>
           {errors.services ? (
             <div style={{ color: "var(--status-critical)", fontSize: 12 }}>{errors.services}</div>
           ) : (
@@ -246,7 +333,58 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {isAdmin && (
+      {!loading && !hasAnyData && (
+        <div style={{
+          backgroundColor: "var(--bg-surface)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "var(--radius-md)",
+          padding: 48,
+          textAlign: "center",
+          marginBottom: 24
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>📡</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+            Spectra Telemetry Standby
+          </div>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 20px auto", lineHeight: 1.5 }}>
+            No automatic dummy data is ingested on login. Telemetry pipelines are in clean standby mode. Upload a real-world microservice dataset or submit manual telemetry observations to begin monitoring.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+            <Link
+              to="/ingestion"
+              style={{
+                padding: "8px 18px",
+                backgroundColor: "var(--accent-primary)",
+                color: "#fff",
+                borderRadius: "var(--radius-sm)",
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none"
+              }}
+            >
+              Ingest Telemetry CSV
+            </Link>
+            <Link
+              to="/services"
+              style={{
+                padding: "8px 18px",
+                backgroundColor: "var(--bg-subtle)",
+                border: "1px solid var(--border-default)",
+                color: "var(--text-primary)",
+                borderRadius: "var(--radius-sm)",
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none"
+              }}
+            >
+              Register Service
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Enterprise Monitored Services Table for Admin */}
+      {isAdmin && data.services.length > 0 && (
         <Card
           title="Enterprise Monitored Services"
           subtitle="All registered services across organization workspaces (Read-only monitoring)"
@@ -319,74 +457,77 @@ export function DashboardPage() {
               description="Adjust the filters or search term above to inspect monitored services."
             />
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Service</th>
-                  <th>Workspace Owner</th>
-                  <th>Environment</th>
-                  <th>Endpoint</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEnterpriseServices.map((svc) => (
-                  <tr key={svc.id}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{svc.name}</div>
-                      {svc.description && (
-                        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-                          {svc.description}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
-                        {svc.ownerEmail || "System"}
-                      </code>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
-                        {svc.environment}
-                      </span>
-                    </td>
-                    <td>
-                      <code style={{ fontSize: 12, color: "var(--text-muted)" }}>{svc.endpointUrl}</code>
-                    </td>
-                    <td>
-                      <Badge variant={svc.active ? "healthy" : "neutral"}>
-                        {svc.active ? "ACTIVE" : "INACTIVE"}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: 10 }}>
-                        <Link
-                          to={`/metrics?serviceId=${svc.id}`}
-                          style={{ fontSize: 12, color: "var(--accent-primary)", fontWeight: 500 }}
-                        >
-                          Telemetry
-                        </Link>
-                        <Link
-                          to="/services"
-                          style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}
-                        >
-                          Details
-                        </Link>
-                      </div>
-                    </td>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Workspace Owner</th>
+                    <th>Environment</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredEnterpriseServices.map((svc) => (
+                    <tr key={svc.id}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{svc.name}</div>
+                        {svc.description && (
+                          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
+                            {svc.description}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <code style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                          {svc.ownerEmail || "System"}
+                        </code>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+                          {svc.environment}
+                        </span>
+                      </td>
+                      <td>
+                        <code style={{ fontSize: 12, color: "var(--text-muted)" }}>{svc.endpointUrl}</code>
+                      </td>
+                      <td>
+                        <Badge variant={svc.active ? "healthy" : "neutral"}>
+                          {svc.active ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          <Link
+                            to={`/metrics?serviceId=${svc.id}`}
+                            style={{ fontSize: 12, color: "var(--accent-primary)", fontWeight: 500 }}
+                          >
+                            Telemetry
+                          </Link>
+                          <Link
+                            to="/services"
+                            style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}
+                          >
+                            Details
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      {/* Telemetry and Alert Stream */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))", gap: 20, alignItems: "start" }}>
         <Card
           title="Recent Ingested Telemetry"
-          subtitle={isAdmin ? "Latest measurements across all workspaces" : "Latest measurements ingested across services"}
+          subtitle={isAdmin ? "Latest observations recorded across all monitored services" : "Latest observations recorded in your workspace"}
           actions={<Link to="/metrics" style={{ fontSize: 12 }}>View all metrics →</Link>}
         >
           {loading && data.metrics.length === 0 ? (
@@ -394,30 +535,32 @@ export function DashboardPage() {
           ) : errors.metrics ? (
             <div style={{ color: "var(--status-critical)", fontSize: 12, padding: 12 }}>{errors.metrics}</div>
           ) : data.metrics.length === 0 ? (
-            <EmptyState title="No metrics ingested yet" description="Metrics submitted via the API will appear here." />
+            <EmptyState title="No metrics ingested yet" description="Submit telemetry via the Ingestion page or API." />
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Service</th>
-                  <th>Metric</th>
-                  <th>Value</th>
-                  <th>Recorded At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.metrics.map((m) => (
-                  <tr key={m.id}>
-                    <td style={{ fontWeight: 500 }}>{m.serviceName}</td>
-                    <td><code>{m.metricName}</code></td>
-                    <td>{m.metricValue} <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{m.unit}</span></td>
-                    <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                      {new Date(m.recordedAt).toLocaleTimeString()}
-                    </td>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Recorded At</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.metrics.map((m) => (
+                    <tr key={m.id}>
+                      <td style={{ fontWeight: 500 }}>{m.serviceName}</td>
+                      <td><code>{m.metricName}</code></td>
+                      <td>{m.metricValue} <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{m.unit}</span></td>
+                      <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                        {new Date(m.recordedAt).toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
 
@@ -433,33 +576,35 @@ export function DashboardPage() {
           ) : unresolvedAlerts.length === 0 ? (
             <EmptyState title="No active alerts" description="All alert rules are currently within normal thresholds." />
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Severity</th>
-                  <th>Rule / Service</th>
-                  <th>Status</th>
-                  <th>Triggered</th>
-                </tr>
-              </thead>
-              <tbody>
-                {unresolvedAlerts.slice(0, 6).map((a) => (
-                  <tr key={a.id}>
-                    <td><Badge>{a.severity}</Badge></td>
-                    <td>
-                      <div style={{ fontWeight: 500 }}>{a.ruleName}</div>
-                      <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                        {a.serviceName} {isAdmin && a.ownerEmail ? `(${a.ownerEmail})` : ""}
-                      </div>
-                    </td>
-                    <td><Badge>{a.status}</Badge></td>
-                    <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                      {new Date(a.triggeredAt).toLocaleTimeString()}
-                    </td>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Severity</th>
+                    <th>Rule / Service</th>
+                    <th>Status</th>
+                    <th>Triggered</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {unresolvedAlerts.slice(0, 6).map((a) => (
+                    <tr key={a.id}>
+                      <td><Badge>{a.severity}</Badge></td>
+                      <td>
+                        <div style={{ fontWeight: 500 }}>{a.ruleName}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                          {a.serviceName} {isAdmin && a.ownerEmail ? `(${a.ownerEmail})` : ""}
+                        </div>
+                      </td>
+                      <td><Badge>{a.status}</Badge></td>
+                      <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                        {new Date(a.triggeredAt).toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
       </div>

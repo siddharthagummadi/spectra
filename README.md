@@ -25,10 +25,11 @@
     └───────────────────────────┘         └───────────────────────────────┘
 ```
 
-The system is decoupled into three primary microservices:
+The system is decoupled into four core components:
 1. **Frontend (`/frontend`):** Modern React single-page application providing real-time dashboards, service registries, metric telemetry visualizers, and incident management boards.
-2. **Backend Core (`/src`):** High-throughput Spring Boot API server with Spring Security (RBAC), JPA persistence, alert rule evaluation engine, and incident lifecycle management.
+2. **Backend Core (`/backend`):** High-throughput Spring Boot API server with Spring Security (RBAC), JPA persistence, alert rule evaluation engine, and incident lifecycle management.
 3. **AI Intelligence Microservice (`/ai-service`):** Python FastAPI service providing Z-score/IQR anomaly detection, failure forecasting, automated Root Cause Analysis (RCA), and retrieval-augmented runbook recommendations (RAG).
+4. **Monitoring Agent (`/agent`):** Lightweight standalone Java telemetry agent for host-level metric collection, local buffering, and authenticated ingestion.
 
 ---
 
@@ -48,24 +49,35 @@ The system is decoupled into three primary microservices:
 
 ```
 spectra/
-├── frontend/               # React + Vite frontend application
-│   ├── src/                # Components, pages, contexts, and API clients
-│   └── package.json
-├── src/main/java/          # Spring Boot backend source code
-│   └── com/spectra/
-│       ├── config/         # Security and database configurations
-│       ├── controller/     # REST controllers (Services, Metrics, Alerts, Incidents, AI)
-│       ├── entity/         # JPA entities
-│       ├── repository/     # Spring Data JPA repositories
-│       └── service/        # Core business logic and external AI client
-├── ai-service/             # FastAPI AI & ML Intelligence microservice
-│   ├── services/           # Anomaly detection, RCA, Copilot, and RAG services
-│   ├── knowledge_base/     # Incident resolution runbooks
-│   └── main.py             # FastAPI entrypoint
-├── Dockerfile.backend      # Multi-stage Dockerfile for Spring Boot
-├── Dockerfile.frontend     # Multi-stage Dockerfile for React + Nginx
-├── Dockerfile.ai           # Dockerfile for FastAPI AI microservice
-└── docker-compose.yml      # Orchestration for full stack + Prometheus
+├── agent/                      # Standalone Java monitoring agent
+│   ├── src/                    # Agent collectors, local buffer, API client
+│   └── pom.xml
+├── ai-service/                 # FastAPI AI & ML Intelligence microservice
+│   ├── knowledge_base/         # Incident resolution runbooks
+│   ├── services/               # Anomaly detection, RCA, Copilot, and RAG services
+│   ├── tests/                  # AI microservice unit & API tests
+│   ├── Dockerfile              # Dockerfile for FastAPI AI microservice
+│   ├── main.py                 # FastAPI entrypoint
+│   ├── requirements.txt
+│   └── schemas.py
+├── backend/                    # Spring Boot backend core API
+│   ├── .mvn/                   # Maven wrapper metadata
+│   ├── src/main/java/          # Application source (config, controller, dto, entity, repository, security, service)
+│   ├── src/test/java/          # Unit and integration tests
+│   ├── Dockerfile              # Multi-stage Dockerfile for Spring Boot
+│   ├── mvnw / mvnw.cmd         # Maven wrapper scripts
+│   └── pom.xml
+├── frontend/                   # React + Vite frontend application
+│   ├── src/                    # API clients, components, contexts, pages, styles
+│   ├── Dockerfile              # Multi-stage Dockerfile for React + Nginx
+│   ├── nginx.conf              # Nginx reverse-proxy configuration
+│   ├── package.json
+│   └── vite.config.js
+├── infrastructure/             # Infrastructure & observability configurations
+│   └── prometheus/
+│       └── prometheus.yml      # Prometheus scrape configuration
+├── .env.example                # Root environment variable template
+└── docker-compose.yml          # Orchestration for full stack + Prometheus
 ```
 
 ---
@@ -85,7 +97,7 @@ python main.py
 #### 2. Backend API (Spring Boot)
 Ensure PostgreSQL is running on port 5432 with database `spectra_db`:
 ```bash
-# In the root directory:
+cd backend
 ./mvnw spring-boot:run
 ```
 *Runs on `http://localhost:8080`.*

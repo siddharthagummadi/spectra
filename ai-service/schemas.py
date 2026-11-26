@@ -133,3 +133,21 @@ class CopilotChatResponse(BaseModel):
     engine_used: str
     referenced_runbooks: List[str]
     status: str
+    sentiment: Optional[Dict[str, Any]] = None
+
+
+class CopilotConfigRequest(BaseModel):
+    provider: str = Field(..., example="gemini")  # "gemini", "grok", or "local"
+    api_key: Optional[str] = Field(None, example="AIzaSy...")
+    model: Optional[str] = Field(None, example="gemini-1.5-flash")
+
+
+class CopilotConfigResponse(BaseModel):
+    provider: str
+    is_configured: bool
+    active_model: str
+    masked_key: Optional[str] = None
+    free_of_cost: bool
+    gemini_configured: bool
+    grok_configured: bool
+    note: str

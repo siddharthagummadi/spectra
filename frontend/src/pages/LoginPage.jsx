@@ -7,9 +7,10 @@ import { AlertBanner } from "../components/common/AlertBanner";
 
 export function LoginPage() {
   const [activeTab, setActiveTab] = useState("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("operator@spectra.local");
+  const [password, setPassword] = useState("Password123!");
   const [fullName, setFullName] = useState("");
+  const [organizationCode, setOrganizationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState(null);
@@ -27,8 +28,19 @@ export function LoginPage() {
 
     try {
       const userRes = await verifyCredentials(email, password);
-      login({ email: userRes.email, fullName: userRes.fullName, role: userRes.role }, userRes.credentials);
-      navigate("/dashboard");
+      login(
+        {
+          email: userRes.email,
+          fullName: userRes.fullName,
+          role: userRes.role,
+          enterpriseId: userRes.enterpriseId,
+          enterpriseName: userRes.enterpriseName,
+          enterpriseOrganizationCode: userRes.enterpriseOrganizationCode,
+          enterpriseStatus: userRes.enterpriseStatus
+        },
+        userRes.credentials
+      );
+      navigate(userRes.role === "ADMIN" ? "/admin/overview" : "/dashboard");
     } catch (err) {
       setErrorMessage(err.message || "Failed to authenticate with backend");
     } finally {
@@ -44,7 +56,12 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      await registerUser({ fullName, email, password });
+      await registerUser({
+        fullName,
+        email,
+        password,
+        organizationCode: organizationCode.trim() || undefined
+      });
       setSuccessMessage("Registration successful. Please sign in with your credentials.");
       setActiveTab("signin");
       setPassword("");
@@ -74,17 +91,17 @@ export function LoginPage() {
         padding: 32,
         boxShadow: "var(--shadow-modal)"
       }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
             display: "inline-block",
-            width: 12,
-            height: 12,
+            width: 14,
+            height: 14,
             borderRadius: "50%",
             backgroundColor: "var(--accent-primary)",
             marginBottom: 8
           }}></div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.04em" }}>SPECTRA</h1>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "0.04em", margin: 0 }}>SPECTRA</h1>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 6, marginBottom: 0 }}>
             Enterprise Operations & Monitoring Platform
           </p>
         </div>
@@ -175,14 +192,14 @@ export function LoginPage() {
               />
             </div>
 
-            <div style={{ marginTop: 20 }}>
-              <Button type="submit" variant="primary" loading={loading} style={{ width: "100%" }}>
+            <div style={{ marginTop: 24 }}>
+              <Button type="submit" variant="primary" loading={loading} style={{ width: "100%", justifyContent: "center" }}>
                 Sign In to Platform
               </Button>
             </div>
 
-            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 14, textAlign: "center" }}>
-              HTTP Basic credentials are kept in React memory for security.
+            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 16, textAlign: "center" }}>
+              Secure HTTP Basic credentials with role-based access control.
             </p>
           </form>
         ) : (
@@ -228,8 +245,21 @@ export function LoginPage() {
               <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Must be 8 to 72 characters</span>
             </div>
 
-            <div style={{ marginTop: 20 }}>
-              <Button type="submit" variant="primary" loading={loading} style={{ width: "100%" }}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-org">Organization Code (Optional)</label>
+              <input
+                id="reg-org"
+                type="text"
+                className="form-input"
+                value={organizationCode}
+                onChange={(e) => setOrganizationCode(e.target.value)}
+                maxLength={64}
+                placeholder="e.g. ACME_PROD (leave blank for standalone workspace)"
+              />
+            </div>
+
+            <div style={{ marginTop: 24 }}>
+              <Button type="submit" variant="primary" loading={loading} style={{ width: "100%", justifyContent: "center" }}>
                 Create Account
               </Button>
             </div>

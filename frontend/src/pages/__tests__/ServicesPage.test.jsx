@@ -151,9 +151,9 @@ describe("ServicesPage", () => {
       expect(screen.getByText("Owner")).toBeInTheDocument();
       expect(screen.getAllByText("operator@spectra.local").length).toBeGreaterThan(0);
       expect(screen.getAllByText("technova@spectra.local").length).toBeGreaterThan(0);
-      expect(screen.getByText("Edit")).toBeInTheDocument();
-      expect(screen.getByText("Deactivate")).toBeInTheDocument();
-      expect(screen.getByText("Read-only")).toBeInTheDocument();
+      expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+      expect(screen.queryByText("Deactivate")).not.toBeInTheDocument();
+      expect(screen.getAllByText("Read-only").length).toBe(2);
     });
   });
 });

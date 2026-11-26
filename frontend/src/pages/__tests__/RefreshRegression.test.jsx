@@ -11,6 +11,8 @@ import * as alertsApi from "../../api/alertsApi";
 import * as incidentsApi from "../../api/incidentsApi";
 import * as metricsApi from "../../api/metricsApi";
 import * as usersApi from "../../api/usersApi";
+import * as aiApi from "../../api/aiApi";
+import * as demoApi from "../../api/demoApi";
 import * as apiClient from "../../api/apiClient";
 
 function ProtectedWrapper({ role = "USER", email = "technova@spectra.local", children }) {
@@ -38,10 +40,14 @@ function ProtectedWrapper({ role = "USER", email = "technova@spectra.local", chi
   );
 }
 
+const originalFetch = global.fetch;
+
 describe("Refresh and Authentication Regression Tests", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    global.fetch = originalFetch;
     vi.spyOn(usersApi, "checkBackendHealth").mockResolvedValue({ status: "UP" });
+    vi.spyOn(aiApi, "getAiHealth").mockResolvedValue({ status: "UP" });
     vi.spyOn(servicesApi, "getAllServices").mockResolvedValue([
       { id: 1, name: "Alpha Service", active: true, environment: "PRODUCTION", ownerEmail: "technova@spectra.local" },
       { id: 2, name: "Beta Service", active: false, environment: "DEVELOPMENT", ownerEmail: "operator@spectra.local" }
@@ -54,6 +60,9 @@ describe("Refresh and Authentication Regression Tests", () => {
     ]);
     vi.spyOn(incidentsApi, "getAllIncidents").mockResolvedValue([]);
     vi.spyOn(metricsApi, "getRecentMetrics").mockResolvedValue([]);
+    vi.spyOn(demoApi, "getDemoStatus").mockResolvedValue({ hasData: true });
+    vi.spyOn(demoApi, "seedDemoData").mockResolvedValue({});
+    vi.spyOn(demoApi, "tickDemoData").mockResolvedValue({});
   });
 
   it("1. An authenticated USER can click Refresh without being redirected to Login", async () => {
@@ -393,8 +402,8 @@ describe("Refresh and Authentication Regression Tests", () => {
     });
   });
 
-  it("10. In-memory session policy requires re-authentication on full browser reload while in-page refresh maintains session", async () => {
-    localStorage.setItem("spectra_auth_credentials", "legacy-creds");
+  it("10. Full browser reload preserves authenticated session and role without redirecting to login (Phase 10)", async () => {
+    localStorage.setItem("spectra_auth_credentials", "persisted-creds");
     localStorage.setItem("spectra_auth_user", JSON.stringify({
       email: "operator@spectra.local",
       role: "ADMIN"
@@ -422,10 +431,10 @@ describe("Refresh and Authentication Regression Tests", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("LOGIN_PAGE_REDIRECT")).toBeInTheDocument();
-      expect(screen.queryByText("AUTHENTICATED_DASHBOARD")).not.toBeInTheDocument();
-      expect(localStorage.getItem("spectra_auth_credentials")).toBeNull();
-      expect(localStorage.getItem("spectra_auth_user")).toBeNull();
+      expect(screen.getByText("AUTHENTICATED_DASHBOARD")).toBeInTheDocument();
+      expect(screen.queryByText("LOGIN_PAGE_REDIRECT")).not.toBeInTheDocument();
+      expect(localStorage.getItem("spectra_auth_credentials")).toBe("persisted-creds");
+      expect(JSON.parse(localStorage.getItem("spectra_auth_user")).email).toBe("operator@spectra.local");
     });
   });
 });
