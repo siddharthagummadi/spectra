@@ -24,10 +24,12 @@ export function LoginPage({ initialTab = "signin" }) {
   const [searchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab") === "register" ? "register" : initialTab;
   const [activeTab, setActiveTab] = useState(requestedTab);
-  const [email, setEmail] = useState("operator@spectra.local");
-  const [password, setPassword] = useState("Password123!");
+  const [signinEmail, setSigninEmail] = useState("");
+  const [signinPassword, setSigninPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
   const [organizationCode, setOrganizationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -49,7 +51,7 @@ export function LoginPage({ initialTab = "signin" }) {
     setLoading(true);
 
     try {
-      const userRes = await verifyCredentials(email, password);
+      const userRes = await verifyCredentials(signinEmail, signinPassword);
       login(
         {
           email: userRes.email,
@@ -80,13 +82,15 @@ export function LoginPage({ initialTab = "signin" }) {
     try {
       await registerUser({
         fullName,
-        email,
-        password,
+        email: regEmail,
+        password: regPassword,
         organizationCode: organizationCode.trim() || undefined
       });
       setSuccessMessage("Registration successful. Please sign in with your credentials.");
+      setSigninEmail(regEmail);
+      setSigninPassword("");
+      setRegPassword("");
       setActiveTab("signin");
-      setPassword("");
     } catch (err) {
       setErrorMessage(err.message || "Registration failed");
       setFieldErrors(err.fieldErrors || null);
@@ -270,11 +274,11 @@ export function LoginPage({ initialTab = "signin" }) {
                     id="signin-email"
                     type="email"
                     className="form-input auth-input-with-icon"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={signinEmail}
+                    onChange={(e) => setSigninEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    placeholder="operator@spectra.local"
+                    placeholder="Enter your email address"
                   />
                 </div>
               </div>
@@ -292,10 +296,11 @@ export function LoginPage({ initialTab = "signin" }) {
                     id="signin-password"
                     type={showPassword ? "text" : "password"}
                     className="form-input auth-input-with-icon auth-input-with-toggle"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={signinPassword}
+                    onChange={(e) => setSigninPassword(e.target.value)}
                     required
                     autoComplete="current-password"
+                    placeholder="Enter your password"
                   />
                   <button
                     type="button"
@@ -360,11 +365,12 @@ export function LoginPage({ initialTab = "signin" }) {
                     id="reg-email"
                     type="email"
                     className="form-input auth-input-with-icon"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
                     required
                     maxLength={150}
-                    placeholder="you@organization.com"
+                    autoComplete="email"
+                    placeholder="Enter your email address"
                   />
                 </div>
               </div>
@@ -382,11 +388,13 @@ export function LoginPage({ initialTab = "signin" }) {
                     id="reg-password"
                     type={showPassword ? "text" : "password"}
                     className="form-input auth-input-with-icon auth-input-with-toggle"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
                     required
                     minLength={8}
                     maxLength={72}
+                    autoComplete="new-password"
+                    placeholder="Create a password"
                   />
                   <button
                     type="button"

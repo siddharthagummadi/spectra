@@ -21,7 +21,8 @@ describe("LoginPage UI and interactions", () => {
     );
 
     expect(screen.getByText(/Unified Service Telemetry, Anomaly Detection & AI RCA/i)).toBeInTheDocument();
-    expect(screen.getByLabelText("Email Address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email Address")).toHaveValue("");
+    expect(screen.getByLabelText("Password")).toHaveValue("");
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
     expect(screen.getByRole("link", { name: /Back to Spectra Overview/i })).toHaveAttribute("href", "/");
   });
@@ -41,7 +42,9 @@ describe("LoginPage UI and interactions", () => {
     expect(screen.getByRole("button", { name: "Hide password" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "Register User" }));
-    expect(screen.getByLabelText("Full Name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Full Name")).toHaveValue("");
+    expect(screen.getByLabelText("Email Address")).toHaveValue("");
+    expect(screen.getByLabelText("Password")).toHaveValue("");
     expect(screen.getByRole("button", { name: "Create Account" })).toBeInTheDocument();
   });
 });
