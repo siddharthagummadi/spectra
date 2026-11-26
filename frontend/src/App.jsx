@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -65,23 +66,32 @@ function EnterpriseUserRoute({ children }) {
 
 export function App() {
   const { isAuthenticated, isInitializing, isAdmin } = useAuth();
+  const authedHome = isAdmin ? "/admin/overview" : "/dashboard";
 
   return (
     <Routes>
       <Route
-        path="/login"
-        element={!isInitializing && isAuthenticated ? <Navigate to={isAdmin ? "/admin/overview" : "/dashboard"} replace /> : <LoginPage />}
+        path="/"
+        element={!isInitializing && isAuthenticated ? <Navigate to={authedHome} replace /> : <LandingPage />}
       />
 
       <Route
-        path="/"
+        path="/login"
+        element={!isInitializing && isAuthenticated ? <Navigate to={authedHome} replace /> : <LoginPage initialTab="signin" />}
+      />
+
+      <Route
+        path="/register"
+        element={!isInitializing && isAuthenticated ? <Navigate to={authedHome} replace /> : <LoginPage initialTab="register" />}
+      />
+
+      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to={isAdmin ? "/admin/overview" : "/dashboard"} replace />} />
 
         {/* Platform Admin Routes */}
         <Route path="admin/overview" element={<AdminRoute><AdminOverviewPage /></AdminRoute>} />

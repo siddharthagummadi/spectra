@@ -1,12 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { verifyCredentials, registerUser } from "../api/usersApi";
 import { Button } from "../components/common/Button";
 import { AlertBanner } from "../components/common/AlertBanner";
 
-export function LoginPage() {
-  const [activeTab, setActiveTab] = useState("signin");
+export function LoginPage({ initialTab = "signin" }) {
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab") === "register" ? "register" : initialTab;
+  const [activeTab, setActiveTab] = useState(requestedTab);
+
+  useEffect(() => {
+    setActiveTab(requestedTab);
+  }, [requestedTab]);
   const [email, setEmail] = useState("operator@spectra.local");
   const [password, setPassword] = useState("Password123!");
   const [fullName, setFullName] = useState("");
@@ -250,6 +256,12 @@ export function LoginPage() {
             </div>
           </form>
         )}
+
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid var(--border-subtle)", textAlign: "center" }}>
+          <Link to="/" style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
+            ← Back to Spectra Overview
+          </Link>
+        </div>
       </div>
     </div>
   );
