@@ -719,7 +719,7 @@ export function IncidentDetailPage() {
           )}
 
           <Card title="Incident Overview" style={{ marginBottom: 20 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 13 }}>
+            <div className="grid-2col" style={{ fontSize: 13 }}>
               <div>
                 <span style={{ color: "var(--text-secondary)", display: "block", fontSize: 11, textTransform: "uppercase" }}>Current Status</span>
                 <strong style={{ fontSize: 14 }}>{incident.status}</strong>

@@ -181,7 +181,7 @@ export function AiAnalyticsPage() {
         {/* Section 1: Root Cause Analysis (RCA) */}
         <Card title="1. Automated Root Cause Analysis (Multi-Metric Signature Matching)" style={{ overflow: "hidden" }}>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ flex: 1, minWidth: "min(100%, 260px)" }}>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 4 }}>
                 Target Incident for Diagnostic Investigation:
               </label>
@@ -311,7 +311,7 @@ export function AiAnalyticsPage() {
         {/* Section 2: Runbook Recommendations (RAG) */}
         <Card title="2. Retrieval-Augmented Generation (RAG) Runbook Knowledge Base">
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ flex: 1, minWidth: "min(100%, 260px)" }}>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 4 }}>
                 Diagnostic Query / Incident Signature:
               </label>

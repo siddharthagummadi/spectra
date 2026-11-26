@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export function Sidebar() {
+export function Sidebar({ isOpen = false, onClose } = {}) {
   const { user, logout, isAdmin } = useAuth();
 
   const adminNavItems = [
@@ -31,22 +31,27 @@ export function Sidebar() {
   const navItems = isAdmin ? adminNavItems : userNavItems;
 
   return (
-    <aside style={{
-      width: 220,
-      backgroundColor: "var(--bg-surface)",
-      borderRight: "1px solid var(--border-default)",
-      display: "flex",
-      flexDirection: "column",
-      minHeight: "100vh"
-    }}>
-      <div style={{ padding: "18px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "var(--accent-primary)" }}></div>
-          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.04em", color: "var(--text-primary)" }}>SPECTRA</span>
+    <aside className={`app-sidebar${isOpen ? " is-open" : ""}`} aria-label="Primary navigation">
+      <div className="sidebar-header">
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: "var(--accent-primary)" }}></div>
+            <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.04em", color: "var(--text-primary)" }}>SPECTRA</span>
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {isAdmin ? "Platform Admin Console" : (user?.enterpriseName || "Enterprise Operations")}
+          </div>
         </div>
-        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          {isAdmin ? "Platform Admin Console" : (user?.enterpriseName || "Enterprise Operations")}
-        </div>
+        {onClose && (
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={onClose}
+            aria-label="Close navigation menu"
+          >
+            &times;
+          </button>
+        )}
       </div>
 
       <nav style={{ padding: "12px 8px", flex: 1, overflowY: "auto" }}>
@@ -54,6 +59,7 @@ export function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={() => onClose?.()}
             style={({ isActive }) => ({
               display: "flex",
               alignItems: "center",

@@ -164,7 +164,7 @@ export function ServicesPage() {
       )}
 
       <Card>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+        <div className="filter-bar">
           <input
             type="text"
             className="form-input"

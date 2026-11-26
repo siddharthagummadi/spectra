@@ -74,23 +74,8 @@ export function LoginPage() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "var(--bg-page)",
-      padding: 20
-    }}>
-      <div style={{
-        width: "100%",
-        maxWidth: 420,
-        backgroundColor: "var(--bg-surface)",
-        border: "1px solid var(--border-default)",
-        borderRadius: "var(--radius-md)",
-        padding: 32,
-        boxShadow: "var(--shadow-modal)"
-      }}>
+    <div className="login-wrapper">
+      <div className="login-card">
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
             display: "inline-block",

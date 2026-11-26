@@ -6,7 +6,7 @@ import { getNotifications, getUnreadCount, markAsRead } from "../../api/notifica
 import { Badge } from "../common/Badge";
 import { useAuth } from "../../context/AuthContext";
 
-export function Header({ title }) {
+export function Header({ title, onMenuClick, isSidebarOpen = false }) {
   const [healthStatus, setHealthStatus] = useState("CHECKING");
   const [aiStatus, setAiStatus] = useState("CHECKING");
   const [refreshing, setRefreshing] = useState(false);
@@ -102,21 +102,19 @@ export function Header({ title }) {
   };
 
   return (
-    <header style={{
-      minHeight: 52,
-      backgroundColor: "var(--bg-surface)",
-      borderBottom: "1px solid var(--border-default)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "8px 20px",
-      flexWrap: "wrap",
-      gap: 12,
-      boxSizing: "border-box",
-      position: "relative",
-      zIndex: 40
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+    <header className="app-header">
+      <div className="app-header-left">
+        {onMenuClick && (
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            onClick={onMenuClick}
+            aria-label="Toggle navigation menu"
+            aria-expanded={isSidebarOpen}
+          >
+            ☰
+          </button>
+        )}
         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
           {title || "Spectra Operations Platform"}
         </div>
@@ -161,7 +159,7 @@ export function Header({ title }) {
         )}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", justifyContent: "flex-end" }}>
+      <div className="app-header-right">
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
           <span title={`Backend API: ${healthStatus}`}>
             <Badge variant={healthStatus === "UP" ? "healthy" : "critical"}>API: {healthStatus}</Badge>
@@ -236,21 +234,7 @@ export function Header({ title }) {
           </button>
 
           {showNotifications && (
-            <div style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              marginTop: 6,
-              width: 320,
-              backgroundColor: "var(--bg-surface)",
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
-              boxShadow: "var(--shadow-modal)",
-              padding: 12,
-              zIndex: 100,
-              maxHeight: 380,
-              overflowY: "auto"
-            }}>
+            <div className="notifications-popover">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Notifications</span>
                 {unreadCount > 0 && (
@@ -306,9 +290,9 @@ export function Header({ title }) {
           )}
         </div>
 
-        <div style={{ width: 1, height: 16, backgroundColor: "var(--border-default)" }}></div>
+        <div className="header-divider"></div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-secondary)" }}>
+        <div className="header-user-meta">
           <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={user?.email}>
             {user?.email}
           </span>

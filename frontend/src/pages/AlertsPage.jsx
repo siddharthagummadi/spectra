@@ -270,7 +270,7 @@ export function AlertsPage() {
 
       {activeTab === "events" && (
         <Card>
-          <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
+          <div className="filter-bar">
             <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
               Filter by Status:
             </label>
@@ -636,7 +636,7 @@ export function AlertsPage() {
             </select>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid-2col" style={{ gap: 12 }}>
             <div className="form-group">
               <label className="form-label" htmlFor="rule-comp">Comparator *</label>
               <select
@@ -668,7 +668,7 @@ export function AlertsPage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid-2col" style={{ gap: 12 }}>
             <div className="form-group">
               <label className="form-label" htmlFor="rule-unit">Unit *</label>
               {ruleForm.metricName === "MEMORY_USAGE" ? (

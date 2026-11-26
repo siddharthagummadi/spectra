@@ -654,15 +654,16 @@ export function EvaluationPage() {
           </div>
 
           {/* SECTION 3: SCENARIO-WISE PERFORMANCE TABLE & 2X2 CONFUSION MATRIX HEATMAP */}
-          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 20, marginBottom: 24 }}>
+          <div className="grid-eval-split">
             {/* Scenario-Wise Performance Table */}
             <div style={{
               backgroundColor: "var(--bg-surface)",
               border: "1px solid var(--border-default)",
               borderRadius: "var(--radius-md)",
-              padding: 20
+              padding: 20,
+              minWidth: 0
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                 <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                   📋 Scenario-Wise Performance Breakdown
                 </h3>
@@ -718,22 +719,17 @@ export function EvaluationPage() {
               backgroundColor: "var(--bg-surface)",
               border: "1px solid var(--border-default)",
               borderRadius: "var(--radius-md)",
-              padding: 20
+              padding: 20,
+              minWidth: 0
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                 <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                   🎯 2×2 Confusion Matrix Heatmap
                 </h3>
                 <Badge variant="active">{latestExperiment.algorithm}</Badge>
               </div>
 
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gridTemplateRows: "1fr 1fr",
-                gap: 8,
-                marginTop: 8
-              }}>
+              <div className="confusion-grid">
                 {/* True Positive */}
                 <div style={{
                   padding: 14,

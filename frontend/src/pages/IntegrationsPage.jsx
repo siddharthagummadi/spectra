@@ -149,7 +149,10 @@ export function IntegrationsPage() {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: isAdmin ? "1fr" : "1fr 1.2fr", gap: 24, alignItems: "flex-start" }}>
+      <div
+        className={isAdmin ? undefined : "grid-2col-split"}
+        style={isAdmin ? { display: "grid", gridTemplateColumns: "1fr", gap: 24, alignItems: "flex-start" } : undefined}
+      >
         {/* Request Connection Form (Shown to users or when admin wants to request) */}
         <div style={{
           backgroundColor: "var(--bg-surface)",
@@ -165,7 +168,7 @@ export function IntegrationsPage() {
           </p>
 
           <form onSubmit={handleSubmitRequest}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ marginBottom: 14 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Enterprise / System Name *
@@ -195,7 +198,7 @@ export function IntegrationsPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ marginBottom: 14 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Integration Source / Type *
@@ -246,7 +249,7 @@ export function IntegrationsPage() {
               />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid-2col" style={{ marginBottom: 14 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Technical Contact Name *

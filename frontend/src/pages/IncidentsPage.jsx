@@ -178,7 +178,7 @@ export function IncidentsPage() {
       )}
 
       <Card>
-        <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
+        <div className="filter-bar">
           <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
             Filter by Status:
           </label>
@@ -396,7 +396,7 @@ export function IncidentsPage() {
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid-2col" style={{ gap: 12 }}>
             <div className="form-group">
               <label className="form-label" htmlFor="inc-sev">Severity *</label>
               <select

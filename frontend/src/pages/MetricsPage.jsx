@@ -205,7 +205,7 @@ export function MetricsPage() {
       </div>
 
       <Card>
-        <div style={{ display: "flex", gap: 16, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="filter-bar" style={{ gap: 16 }}>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: "var(--text-secondary)" }}>
               Filter by Service:

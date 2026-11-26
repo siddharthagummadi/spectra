@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 
 export function AppLayout() {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close mobile navigation drawer automatically on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile navigation drawer on Escape key
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
 
   const getTitle = () => {
     const path = location.pathname;
@@ -19,11 +37,20 @@ export function AppLayout() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--bg-page)" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <Header title={getTitle()} />
-        <main style={{ flex: 1, padding: "24px 28px", maxWidth: 1440, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+    <div className="app-shell">
+      <div
+        className={`sidebar-backdrop${sidebarOpen ? " is-open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="app-main-wrap">
+        <Header
+          title={getTitle()}
+          isSidebarOpen={sidebarOpen}
+          onMenuClick={() => setSidebarOpen((prev) => !prev)}
+        />
+        <main className="app-main">
           <Outlet />
         </main>
       </div>

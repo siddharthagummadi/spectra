@@ -469,7 +469,7 @@ export function IngestionPage() {
           )}
 
           <form onSubmit={handleManualSubmit}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="grid-2col" style={{ gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Monitored Service *
@@ -515,7 +515,7 @@ export function IngestionPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="grid-2col" style={{ gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Metric Value *
@@ -555,7 +555,7 @@ export function IngestionPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="grid-2col" style={{ gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Observation Timestamp *
@@ -587,7 +587,7 @@ export function IngestionPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div className="grid-2col" style={{ gap: 16, marginBottom: 24 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 4 }}>
                   Scenario Label (Optional)
