@@ -1,14 +1,4 @@
-# Render Blueprint for Spectra Backend, AI Service, and PostgreSQL
-# Note: Render free PostgreSQL instances expire after 30 days.
-# For persistent free hosting, create a Neon/Supabase PostgreSQL database and override
-# SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, and SPRING_DATASOURCE_PASSWORD.
-
-databases:
-  - name: spectra-db
-    databaseName: spectra
-    user: spectra
-    plan: free
-
+# Render Blueprint for Spectra Backend and AI Service (with external Neon/Supabase PostgreSQL)
 services:
   - type: web
     name: spectra-ai-service
@@ -31,26 +21,12 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: DB_HOST
-        fromDatabase:
-          name: spectra-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: spectra-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: spectra-db
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: spectra-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: spectra-db
-          property: password
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
       - key: AI_SERVICE_HOSTPORT
         fromService:
           type: web
