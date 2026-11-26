@@ -124,6 +124,17 @@ docker compose up --build
 
 ---
 
+### Option 3: Free Cloud Deployment (Vercel + Render)
+1. **Backend + AI Service + PostgreSQL on Render:**
+   - Create a **New Blueprint** in Render connected to this GitHub repository (uses [render.yaml](render.yaml)).
+   - Copy the deployed `spectra-backend` URL (e.g., `https://spectra-backend.onrender.com`).
+2. **Frontend on Vercel:**
+   - Import this GitHub repository in Vercel and set **Root Directory** to `frontend`.
+   - Set environment variable `VITE_API_BASE_URL` to your Render backend URL (without a trailing slash).
+   - Deploy to get your live HTTPS link.
+
+---
+
 ## 🛡️ Default Service Ports
 
 | Service | Port | Endpoint |

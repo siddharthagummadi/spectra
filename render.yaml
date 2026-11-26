@@ -1,0 +1,62 @@
+# Render Blueprint for Spectra Backend, AI Service, and PostgreSQL
+# Note: Render free PostgreSQL instances expire after 30 days.
+# For persistent free hosting, create a Neon/Supabase PostgreSQL database and override
+# SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, and SPRING_DATASOURCE_PASSWORD.
+
+databases:
+  - name: spectra-db
+    databaseName: spectra
+    user: spectra
+    plan: free
+
+services:
+  - type: web
+    name: spectra-ai-service
+    runtime: docker
+    plan: free
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: web
+    name: spectra-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: spectra-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: spectra-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: spectra-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: spectra-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: spectra-db
+          property: password
+      - key: AI_SERVICE_HOSTPORT
+        fromService:
+          type: web
+          name: spectra-ai-service
+          property: hostport
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost:5173,http://localhost:3000,https://*.vercel.app
+      - key: SPECTRA_ANOMALY_DETECTION_MULTIVARIATE_ENABLED
+        value: "false"
