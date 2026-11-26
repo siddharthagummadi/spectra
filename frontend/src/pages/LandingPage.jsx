@@ -219,13 +219,42 @@ const WHY_SPECTRA_ITEMS = [
 
 export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState("home");
+  const [heroTab, setHeroTab] = useState("telemetry");
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactSent, setContactSent] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrolled(scrollTop > 16);
+      setScrollProgress(docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0);
+
+      for (let i = NAV_LINKS.length - 1; i >= 0; i--) {
+        const el = document.getElementById(NAV_LINKS[i].id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 140) {
+            setActiveSection(NAV_LINKS[i].id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleNavClick = (e, sectionId) => {
     setMobileMenuOpen(false);
+    setActiveSection(sectionId);
     const target = document.getElementById(sectionId);
     if (target && typeof target.scrollIntoView === "function") {
       e.preventDefault();
@@ -244,7 +273,7 @@ export function LandingPage() {
   return (
     <div className="landing-page">
       {/* Sticky Navigation Bar */}
-      <header className="landing-nav">
+      <header className={`landing-nav${scrolled ? " is-scrolled" : ""}`}>
         <div className="landing-nav-inner">
           <a
             href="#home"
@@ -260,7 +289,7 @@ export function LandingPage() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="landing-nav-link"
+                className={`landing-nav-link${activeSection === item.id ? " is-active" : ""}`}
                 onClick={(e) => handleNavClick(e, item.id)}
               >
                 {item.label}
@@ -318,6 +347,10 @@ export function LandingPage() {
             </Link>
           </div>
         </div>
+
+        <div className="scroll-progress-track" aria-hidden="true">
+          <div className="scroll-progress-fill" style={{ width: `${scrollProgress}%` }} />
+        </div>
       </header>
 
       <main>
@@ -326,22 +359,22 @@ export function LandingPage() {
           <div className="landing-container">
             <div className="landing-hero-grid">
               <div>
-                <div className="landing-pill">
+                <div className="landing-pill hero-anim-1">
                   <span>⚡</span>
                   <span>Enterprise AIOps &amp; Cloud Observability Platform</span>
                 </div>
 
-                <h1 className="landing-hero-title">
+                <h1 className="landing-hero-title hero-anim-2">
                   Observe Distributed Systems. Diagnose Root Causes Faster.
                 </h1>
 
-                <p className="landing-hero-subtitle">
+                <p className="landing-hero-subtitle hero-anim-3">
                   Spectra unifies microservice telemetry ingestion, statistical anomaly detection,
                   incident lifecycle tracking, and AI-driven Root Cause Analysis with RAG runbook
                   recommendations in a single operations platform.
                 </p>
 
-                <div className="landing-hero-ctas">
+                <div className="landing-hero-ctas hero-anim-4">
                   <Link to="/register" className="landing-btn landing-btn-primary landing-btn-lg">
                     Get Started
                   </Link>
@@ -354,7 +387,7 @@ export function LandingPage() {
                   </a>
                 </div>
 
-                <div className="landing-hero-meta">
+                <div className="landing-hero-meta hero-anim-5">
                   <span className="landing-hero-meta-item">
                     <strong>✓</strong> Real-time Z-score &amp; IQR anomaly detection
                   </span>
@@ -368,7 +401,7 @@ export function LandingPage() {
               </div>
 
               {/* Hero Visual Illustration */}
-              <div className="hero-visual-card" aria-label="Spectra Observability Console Preview">
+              <div className="hero-visual-card hero-visual-entrance" aria-label="Spectra Observability Console Preview">
                 <div className="hero-visual-topbar">
                   <div className="hero-visual-dots">
                     <span className="hero-visual-dot" />
@@ -380,6 +413,36 @@ export function LandingPage() {
                 </div>
 
                 <div className="hero-visual-body">
+                  <div className="hero-tab-row" role="tablist" aria-label="Console preview modes">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={heroTab === "telemetry"}
+                      className={`hero-tab-btn${heroTab === "telemetry" ? " is-active" : ""}`}
+                      onClick={() => setHeroTab("telemetry")}
+                    >
+                      Live Telemetry
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={heroTab === "anomaly"}
+                      className={`hero-tab-btn${heroTab === "anomaly" ? " is-active" : ""}`}
+                      onClick={() => setHeroTab("anomaly")}
+                    >
+                      Anomaly |Z|
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={heroTab === "rca"}
+                      className={`hero-tab-btn${heroTab === "rca" ? " is-active" : ""}`}
+                      onClick={() => setHeroTab("rca")}
+                    >
+                      AI RCA &amp; Runbooks
+                    </button>
+                  </div>
+
                   <div className="hero-mini-metrics">
                     <div className="hero-mini-stat">
                       <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>Monitored Metrics</div>
@@ -395,7 +458,7 @@ export function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Telemetry Sparkline Visual */}
+                  {/* Interactive Preview Panel */}
                   <div
                     style={{
                       backgroundColor: "var(--bg-page)",
@@ -404,26 +467,61 @@ export function LandingPage() {
                       padding: 14
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, fontSize: 12, flexWrap: "wrap", gap: 6 }}>
                       <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                        Service Telemetry Stream (RESPONSE_TIME / CPU_USAGE)
+                        {heroTab === "telemetry" && "Service Telemetry Stream (RESPONSE_TIME / CPU_USAGE)"}
+                        {heroTab === "anomaly" && "Statistical Z-Score & Threshold Evaluation"}
+                        {heroTab === "rca" && "Multi-Metric Root Cause & RAG Runbook Match"}
                       </span>
-                      <span className="badge badge-warning">|Z| ≥ 3.0 Flagged</span>
+                      <span className={`badge ${heroTab === "rca" ? "badge-healthy" : "badge-warning"}`}>
+                        {heroTab === "telemetry" && "|Z| ≥ 3.0 Flagged"}
+                        {heroTab === "anomaly" && "IQR + Rule Active"}
+                        {heroTab === "rca" && "RCA Ready"}
+                      </span>
                     </div>
-                    <svg viewBox="0 0 420 96" style={{ width: "100%", height: "auto", display: "block" }} aria-hidden="true">
-                      <line x1="0" y1="24" x2="420" y2="24" stroke="#DCE1E6" strokeDasharray="4 4" />
-                      <line x1="0" y1="54" x2="420" y2="54" stroke="#DCE1E6" strokeDasharray="4 4" />
-                      <line x1="0" y1="84" x2="420" y2="84" stroke="#DCE1E6" />
-                      <path
-                        d="M 8 72 L 56 68 L 104 70 L 152 63 L 200 66 L 248 58 L 288 22 L 328 48 L 372 60 L 412 64"
-                        fill="none"
-                        stroke="#526B86"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <circle cx="288" cy="22" r="5.5" fill="#A3312D" stroke="#FFFFFF" strokeWidth="2" />
-                    </svg>
+
+                    {heroTab === "telemetry" && (
+                      <svg viewBox="0 0 420 96" style={{ width: "100%", height: "auto", display: "block" }} aria-hidden="true">
+                        <line x1="0" y1="24" x2="420" y2="24" stroke="#DCE1E6" strokeDasharray="4 4" />
+                        <line x1="0" y1="54" x2="420" y2="54" stroke="#DCE1E6" strokeDasharray="4 4" />
+                        <line x1="0" y1="84" x2="420" y2="84" stroke="#DCE1E6" />
+                        <path
+                          className="telemetry-wave-path"
+                          d="M 8 72 L 56 68 L 104 70 L 152 63 L 200 66 L 248 58 L 288 22 L 328 48 L 372 60 L 412 64"
+                          fill="none"
+                          stroke="#526B86"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle cx="288" cy="22" r="7" fill="rgba(163, 49, 45, 0.3)" className="anomaly-beacon-ring" />
+                        <circle cx="288" cy="22" r="5.5" fill="#A3312D" stroke="#FFFFFF" strokeWidth="2" />
+                      </svg>
+                    )}
+
+                    {heroTab === "anomaly" && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
+                        <div style={{ background: "#FFFFFF", border: "1px solid var(--border-default)", borderRadius: 6, padding: 10 }}>
+                          <div style={{ color: "var(--text-secondary)", fontSize: 11 }}>Threshold Engine</div>
+                          <div style={{ fontWeight: 700, marginTop: 2 }}>Alert Rules Active</div>
+                        </div>
+                        <div style={{ background: "#FFFFFF", border: "1px solid var(--border-default)", borderRadius: 6, padding: 10 }}>
+                          <div style={{ color: "var(--text-secondary)", fontSize: 11 }}>AI Statistical Check</div>
+                          <div style={{ fontWeight: 700, marginTop: 2, color: "var(--status-critical)" }}>Z-Score Spike Caught</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {heroTab === "rca" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
+                        <div style={{ background: "#FFFFFF", border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 10px" }}>
+                          <strong>1. Diagnose:</strong> Correlates telemetry breaches into primary root cause
+                        </div>
+                        <div style={{ background: "#FFFFFF", border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 10px" }}>
+                          <strong>2. Retrieve:</strong> Matches symptom against RAG runbook knowledge base
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* AI RCA + Runbook Preview */}
@@ -553,7 +651,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="mission-grid">
+            <div className="mission-grid reveal-stagger">
               <div className="landing-card">
                 <div className="icon-box">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -599,7 +697,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="features-grid">
+            <div className="features-grid reveal-stagger">
               {KEY_FEATURES.map((feature) => (
                 <div key={feature.title} className="landing-card">
                   <div className="icon-box">{feature.icon}</div>
@@ -625,7 +723,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="steps-grid">
+            <div className="steps-grid reveal-stagger">
               {HOW_IT_WORKS_STEPS.map((item) => (
                 <div key={item.step} className="step-card">
                   <div className="step-number">{item.step}</div>
@@ -651,7 +749,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="why-grid">
+            <div className="why-grid reveal-stagger">
               {WHY_SPECTRA_ITEMS.map((item) => (
                 <div key={item.title} className="why-item">
                   <div className="icon-box" style={{ flexShrink: 0, marginBottom: 0 }}>

@@ -45,6 +45,12 @@ describe("LandingPage and public routing", () => {
     fireEvent.click(toggleBtn);
     expect(toggleBtn).toHaveAttribute("aria-expanded", "true");
 
+    fireEvent.click(screen.getByRole("tab", { name: "Anomaly |Z|" }));
+    expect(screen.getByText("Z-Score Spike Caught")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "AI RCA & Runbooks" }));
+    expect(screen.getByText(/Correlates telemetry breaches into primary root cause/i)).toBeInTheDocument();
+
     fireEvent.change(screen.getByLabelText("Your Name"), { target: { value: "Jane Doe" } });
     fireEvent.change(screen.getByLabelText("Email Address"), { target: { value: "jane@acme.test" } });
     fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Interested in Spectra AIOps." } });

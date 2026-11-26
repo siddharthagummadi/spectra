@@ -29,10 +29,34 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-default);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.landing-nav.is-scrolled {
+  background-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 24px rgba(39, 52, 68, 0.08);
+  border-bottom-color: #d2dae2;
+}
+
+.scroll-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: transparent;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scroll-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), #35694b);
+  transition: width 0.08s linear;
 }
 
 .landing-nav-inner {
@@ -70,18 +94,39 @@
 }
 
 .landing-nav-link {
+  position: relative;
+  padding: 6px 0;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.18s ease;
   white-space: nowrap;
+}
+
+.landing-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background-color: var(--accent-primary);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .landing-nav-link:hover,
 .landing-nav-link.is-active {
   color: var(--accent-primary);
   text-decoration: none;
+}
+
+.landing-nav-link:hover::after,
+.landing-nav-link.is-active::after {
+  transform: scaleX(1);
 }
 
 .landing-nav-actions {
@@ -547,20 +592,162 @@
   color: #94a3b8;
 }
 
-/* Subtle Scroll Animations */
+/* Entrance, Telemetry & Scroll Animations */
+@keyframes heroRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroCardFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes drawTelemetryLine {
+  from {
+    stroke-dashoffset: 620;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes beaconPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  70% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+.hero-anim-1 {
+  animation: heroRiseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-anim-2 {
+  animation: heroRiseIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+.hero-anim-3 {
+  animation: heroRiseIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
+}
+
+.hero-anim-4 {
+  animation: heroRiseIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
+}
+
+.hero-anim-5 {
+  animation: heroRiseIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
+}
+
+.hero-visual-entrance {
+  animation: heroCardFloatIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+
+.telemetry-wave-path {
+  stroke-dasharray: 620;
+  stroke-dashoffset: 0;
+  animation: drawTelemetryLine 1.25s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+
+.anomaly-beacon-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: beaconPulse 2s ease-out infinite;
+}
+
+.hero-tab-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hero-tab-btn {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.hero-tab-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.hero-tab-btn.is-active {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
 .reveal-block {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+  transform: translateY(28px) scale(0.985);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-block.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(22px) scale(0.975);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.reveal-block.is-visible .reveal-stagger > * {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.reveal-block.is-visible .reveal-stagger > *:nth-child(1) { transition-delay: 0.05s; }
+.reveal-block.is-visible .reveal-stagger > *:nth-child(2) { transition-delay: 0.12s; }
+.reveal-block.is-visible .reveal-stagger > *:nth-child(3) { transition-delay: 0.19s; }
+.reveal-block.is-visible .reveal-stagger > *:nth-child(4) { transition-delay: 0.26s; }
+.reveal-block.is-visible .reveal-stagger > *:nth-child(5) { transition-delay: 0.33s; }
+.reveal-block.is-visible .reveal-stagger > *:nth-child(6) { transition-delay: 0.4s; }
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal-block {
+  .hero-anim-1,
+  .hero-anim-2,
+  .hero-anim-3,
+  .hero-anim-4,
+  .hero-anim-5,
+  .hero-visual-entrance,
+  .telemetry-wave-path,
+  .anomaly-beacon-ring {
+    animation: none;
+  }
+
+  .reveal-block,
+  .reveal-stagger > * {
     opacity: 1;
     transform: none;
     transition: none;
